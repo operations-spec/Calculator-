@@ -895,6 +895,9 @@
                     otherProductsToggle.classList.remove('nav-link--hover');
                     otherProductsToggle.classList.remove('nav-link--pinned');
                     isPinnedOther = false;
+                    if (document.activeElement === otherProductsToggle) {
+                        otherProductsToggle.blur();
+                    }
                 };
 
                 otherDropdown.addEventListener('mouseenter', () => {
@@ -910,6 +913,9 @@
                     otherProductsToggle.classList.remove('nav-link--hover');
                     if (!isPinnedOther) {
                         otherDropdownInstance.hide();
+                        if (document.activeElement === otherProductsToggle) {
+                            otherProductsToggle.blur();
+                        }
                     }
                 });
 
