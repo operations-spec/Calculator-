@@ -792,7 +792,7 @@
                                             </div>
                                             {% endif %}
                                             <div class="price-row d-flex justify-content-between align-items-center">
-                                                <span class="price-label">Quantity:</span>
+                                                <span class="price-label">{% if item.type == 'creasing_matrix' %}Packets:{% else %}Quantity:{% endif %}</span>
                                                 <div class="d-flex align-items-center ms-auto">
                                                     <div class="input-group" style="width: 120px;">
                                                         <button class="btn btn-outline-secondary quantity-decrease" type="button" data-index="{{ loop.index0 }}" style="padding: 0.25rem 0.5rem; min-width: 36px; transition: all 0.2s ease;">

@@ -321,13 +321,13 @@
     if (confirmQuantityBtn) {
       confirmQuantityBtn.addEventListener('click', () => {
         if (!state.selectedSize) {
-          showToast('Error', 'Please select a size before confirming rolls.', 'error');
+          showToast('Error', 'Please select a size before confirming packets.', 'error');
           return;
         }
 
         const value = parseFloat(quantityInput.value);
         if (!Number.isFinite(value) || value <= 0) {
-          showToast('Error', 'Enter a valid number of rolls before confirming.', 'error');
+          showToast('Error', 'Enter a valid number of packets before confirming.', 'error');
           return;
         }
 
@@ -395,7 +395,7 @@
       const option = document.createElement('option');
       option.value = size.id;
       const width = Number(size.width_mm);
-      option.textContent = `${size.label} (${Number(size.channel_mm) || 0} mm channel)`;
+      option.textContent = formatSizeLabel(size.label);
       option.dataset.meta = buildSizeMeta(size);
       if (width) {
         option.dataset.width = width;
@@ -412,7 +412,7 @@
     }
 
     if (!state.selectedSize) {
-      setSizeHelper('Choose a size/channel to proceed to rolls.');
+      setSizeHelper('Choose a size to proceed to packets.');
     } else {
       setSizeHelper(buildSizeMeta(state.selectedSize));
     }
@@ -431,13 +431,13 @@
     if (quantityInput) {
       quantityInput.value = '';
       quantityInput.disabled = false;
-      quantityInput.placeholder = 'Enter number of rolls (e.g. 10)';
+      quantityInput.placeholder = 'Enter number of packets (e.g. 10)';
       quantityInput.focus();
     }
     if (quantityHelper) {
       quantityHelper.textContent = size.length_m
-        ? `Each roll is ${size.length_m} m · ₹${getUnitPrice(size).toFixed(2)} per roll.`
-        : `Enter rolls required · ₹${getUnitPrice(size).toFixed(2)} per roll.`;
+        ? `Each packet is ${size.length_m} m · ₹${getUnitPrice(size).toFixed(2)} per packet.`
+        : `Enter packets required · ₹${getUnitPrice(size).toFixed(2)} per packet.`;
     }
     if (confirmQuantityBtn) {
       confirmQuantityBtn.disabled = true;
@@ -446,7 +446,7 @@
     renderSizeOptions();
     resetQuantityInput(false);
     updateSummary();
-    collapseStep(document.getElementById('creasingMatrixStepSize'), `${size.label}`);
+    collapseStep(document.getElementById('creasingMatrixStepSize'), formatSizeLabel(size.label));
   }
 
   function resetQuantityInput(hard = true) {
@@ -461,7 +461,7 @@
       }
     }
     if (quantityHelper) {
-      quantityHelper.textContent = 'Choose a size to enable quantity entry.';
+      quantityHelper.textContent = 'Choose a size to enable packet entry.';
     }
     if (confirmQuantityBtn) {
       confirmQuantityBtn.disabled = true;
@@ -485,7 +485,7 @@
     }
 
     if (state.selectedSize) {
-      items.push(summaryItem('Size / Channel', state.selectedSize.label, buildSizeMeta(state.selectedSize)));
+      items.push(summaryItem('Size', formatSizeLabel(state.selectedSize.label), buildSizeMeta(state.selectedSize)));
     }
 
     const quantityValue = Number(state.quantityRolls);
@@ -496,7 +496,7 @@
       const rollLength = Number(state.selectedSize.length_m) || 0;
       const totalLength = rollLength > 0 ? quantityValue * rollLength : 0;
       if (totalLength > 0) {
-        items.push(summaryItem('Total length', `${formatNumber(totalLength)} m`, `${formatNumber(rollLength)} m × ${formatNumber(quantityValue)} rolls`));
+        items.push(summaryItem('Total length', `${formatNumber(totalLength)} m`, `${formatNumber(rollLength)} m × ${formatNumber(quantityValue)} packets`));
       }
     }
 
@@ -516,7 +516,7 @@
       const gstAmount = (discountedSubtotal * gstPercent) / 100;
       const finalTotal = discountedSubtotal + gstAmount;
 
-      items.push(summaryItem('Base price', `₹${subtotal.toFixed(2)}`, `₹${unitPrice.toFixed(2)} × ${formatNumber(quantityValue)} rolls`));
+      items.push(summaryItem('Base price', `₹${subtotal.toFixed(2)}`, `₹${unitPrice.toFixed(2)} × ${formatNumber(quantityValue)} packets`));
       items.push(renderDiscountControl(discountPercent, discountAmount, discountedSubtotal));
       items.push(summaryItem('GST', `₹${gstAmount.toFixed(2)} (${gstPercent}%)`));
       items.push(summaryItem('Total', `₹${finalTotal.toFixed(2)}`));
@@ -525,7 +525,7 @@
     if (!items.length) {
       summaryBody.innerHTML = '<p class="chem-summary__empty mb-0">Start by selecting a thickness.</p>';
       if (summaryActions) {
-        summaryActions.innerHTML = '<p class="chem-summary__note chem-summary__note--muted mb-0">Your cart button appears after you confirm rolls.</p>';
+        summaryActions.innerHTML = '<p class="chem-summary__note chem-summary__note--muted mb-0">Your cart button appears after you confirm packets.</p>';
       }
     } else {
       summaryBody.innerHTML = items.join('');
@@ -554,7 +554,7 @@
             });
           }
         } else {
-          summaryActions.innerHTML = '<p class="chem-summary__note chem-summary__note--muted mb-0">Confirm rolls to enable the cart button.</p>';
+          summaryActions.innerHTML = '<p class="chem-summary__note chem-summary__note--muted mb-0">Confirm packets to enable the cart button.</p>';
         }
       }
 
@@ -562,10 +562,10 @@
         collapseStep(document.getElementById('creasingMatrixStepThickness'), state.selectedThickness.label || `${state.selectedThickness.value} mm`);
       }
       if (state.selectedSize) {
-        collapseStep(document.getElementById('creasingMatrixStepSize'), state.selectedSize.label);
+        collapseStep(document.getElementById('creasingMatrixStepSize'), formatSizeLabel(state.selectedSize.label));
       }
       if (quantityIsReady) {
-        collapseStep(document.getElementById('creasingMatrixStepQuantity'), `${formatNumber(state.quantityRolls)} rolls${discountLabel}`);
+        collapseStep(document.getElementById('creasingMatrixStepQuantity'), `${formatNumber(state.quantityRolls)} packets${discountLabel}`);
       }
     }
   }
@@ -768,11 +768,20 @@
   function buildSizeMeta(size) {
     if (!size) return '';
     const parts = [];
-    if (size.channel_mm) parts.push(`Channel ${size.channel_mm} mm`);
     if (size.shoulder_mm) parts.push(`Shoulder ${size.shoulder_mm} mm`);
     if (size.width_mm) parts.push(`Width ${size.width_mm} mm`);
-    if (size.length_m) parts.push(`${size.length_m} m roll`);
+    if (size.length_m) parts.push(`${size.length_m} m packet`);
     return parts.join(' · ');
+  }
+
+  function formatSizeLabel(label) {
+    if (!label) return '';
+    const text = String(label).trim();
+    const match = text.match(/^([\d.]+)\s*x\s*([\d.]+)\s*mm$/i);
+    if (!match) {
+      return text;
+    }
+    return `${match[1]} mm x ${match[2]} mm`;
   }
 
   function summaryItem(label, value, note) {

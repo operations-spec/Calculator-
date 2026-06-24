@@ -13,7 +13,7 @@
           "formats": [
             { "id": "px-100-1kg", "label": "1 kg Pouch", "size_kg": 1 },
             { "id": "px-100-5kg", "label": "5 kg Bag", "size_kg": 5 },
-            { "id": "px-100-20kg", "label": "20 kg Bag", "size_kg": 20 }
+            { "id": "px-100-18kg", "label": "18 kg Box", "size_kg": 18 }
           ]
         },
         {
@@ -24,7 +24,7 @@
           "formats": [
             { "id": "px-200-1kg", "label": "1 kg Pouch", "size_kg": 1 },
             { "id": "px-200-5kg", "label": "5 kg Bag", "size_kg": 5 },
-            { "id": "px-200-20kg", "label": "20 kg Bag", "size_kg": 20 }
+            { "id": "px-200-18kg", "label": "18 kg Box", "size_kg": 18 }
           ]
         },
         {
@@ -35,7 +35,7 @@
           "formats": [
             { "id": "px-300-1kg", "label": "1 kg Pouch", "size_kg": 1 },
             { "id": "px-300-5kg", "label": "5 kg Bag", "size_kg": 5 },
-            { "id": "px-300-20kg", "label": "20 kg Bag", "size_kg": 20 }
+            { "id": "px-300-18kg", "label": "18 kg Box", "size_kg": 18 }
           ]
         }
       ]
