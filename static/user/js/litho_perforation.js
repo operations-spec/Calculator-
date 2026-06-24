@@ -2,7 +2,16 @@
   const dataUrl = '/static/data/litho_perforation/products.json';
   const DEFAULT_UNIT_PRICE = 3000;
   const GST_PERCENT = 18;
-  const TPIS = [6, 8, 12, 16, 30, 40, 50];
+  const TPI_OPTIONS = [
+    { value: 6, label: '6 TPI' },
+    { value: 8, label: '8 TPI' },
+    { value: 12, label: '12 TPI' },
+    { value: 16, label: '16 TPI' },
+    { value: 30, label: '30 TPI' },
+    { value: 40, label: '40 TPI' },
+    { value: 50, label: '50 TPI' },
+    { value: 'no_tpi', label: 'No TPI' }
+  ];
   const BRANDS = [
     { id: 'thompson', label: 'Thompson' },
     { id: 'hs_boyd', label: 'H.S Boyd' },
@@ -134,10 +143,12 @@
   }
 
   function renderTpiOptions() {
-    tpiOptions.innerHTML = TPIS.map(tpi => optionButton('tpi', tpi, `${tpi} TPI`, state.tpi === tpi)).join('');
+    tpiOptions.innerHTML = TPI_OPTIONS
+      .map(option => optionButton('tpi', option.value, option.label, state.tpi === option.value))
+      .join('');
     tpiOptions.querySelectorAll('[data-tpi]').forEach(button => {
       button.addEventListener('click', () => {
-        state.tpi = Number(button.dataset.tpi);
+        state.tpi = parseTpiValue(button.dataset.tpi);
         state.type = null;
         resetQuantity();
         renderTpiOptions();
@@ -161,14 +172,17 @@
   }
 
   function renderTypeOptions() {
-    if (!state.tpi) {
+    if (state.tpi === null) {
       typeOptions.innerHTML = '<p class="chem-placeholder mb-0">Select TPI first.</p>';
       return;
     }
 
     const entries = getAvailableEntries();
     if (!entries.length) {
-      typeOptions.innerHTML = '<p class="chem-placeholder mb-0">No product codes available for this selection.</p>';
+      const emptyMessage = state.brand === 'thompson_boyd'
+        ? 'No items available.'
+        : 'No product codes available for this selection.';
+      typeOptions.innerHTML = `<p class="chem-placeholder mb-0">${emptyMessage}</p>`;
       return;
     }
 
@@ -193,7 +207,9 @@
 
   function getAvailableEntries() {
     return state.products.filter(entry => {
-      const tpiMatches = entry.tpi === state.tpi || entry.tpi === null;
+      const tpiMatches = state.tpi === 'no_tpi'
+        ? entry.tpi === null
+        : entry.tpi === state.tpi;
       return tpiMatches && hasCodeForBrand(entry);
     });
   }
@@ -206,17 +222,25 @@
     if (!state.brand) return true;
     if (state.brand === 'thompson') return Boolean(entry.t);
     if (state.brand === 'hs_boyd') return Boolean(entry.h);
-    return Boolean(entry.t || entry.h);
+    return false;
   }
 
   function formatCodes(entry) {
     if (!entry) return '';
     if (state.brand === 'thompson') return entry.t ? `T - ${entry.t}` : 'N/A';
     if (state.brand === 'hs_boyd') return entry.h ? `H - ${entry.h}` : 'N/A';
-    const parts = [];
-    if (entry.t) parts.push(`T - ${entry.t}`);
-    if (entry.h) parts.push(`H - ${entry.h}`);
-    return parts.join(' / ') || 'N/A';
+    return 'N/A';
+  }
+
+  function parseTpiValue(value) {
+    if (value === 'no_tpi') return 'no_tpi';
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : null;
+  }
+
+  function formatTpiLabel(value) {
+    if (value === 'no_tpi') return 'No TPI';
+    return value ? `${value} TPI` : '';
   }
 
   function getUnitPrice(entry) {
@@ -259,7 +283,7 @@
     const entry = getSelectedEntry();
 
     if (state.machineName) items.push(summaryItem('Machine', state.machineName));
-    if (state.tpi) items.push(summaryItem('TPI', `${state.tpi} TPI`));
+    if (state.tpi !== null) items.push(summaryItem('TPI', formatTpiLabel(state.tpi)));
     if (state.brand) items.push(summaryItem('Brand', getBrandLabel(state.brand)));
     if (entry) {
       items.push(summaryItem('Type', TYPES[entry.type]));
@@ -305,7 +329,7 @@
       type: 'litho_perforation',
       name: `Litho Perforation - ${TYPES[entry.type]} - ${codeLabel}`,
       machine: state.machineName || '--',
-      tpi: state.tpi,
+      tpi: formatTpiLabel(state.tpi),
       brand: getBrandLabel(state.brand),
       brand_id: state.brand,
       rule_type: TYPES[entry.type],
