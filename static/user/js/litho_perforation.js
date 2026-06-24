@@ -1,5 +1,6 @@
 (function() {
-  const UNIT_PRICE = 3000;
+  const dataUrl = '/static/data/litho_perforation/products.json';
+  const DEFAULT_UNIT_PRICE = 3000;
   const GST_PERCENT = 18;
   const TPIS = [6, 8, 12, 16, 30, 40, 50];
   const BRANDS = [
@@ -18,31 +19,6 @@
     card_center_score: 'CARD - CENTER SCORE (CREASING)',
     card_centre_slit: 'CARD - CENTRE SLIT (HALF-CUT)'
   };
-  const CODES = [
-    { tpi: 6, type: 'card_center', t: '311', h: '609' },
-    { tpi: 6, type: 'card_side', t: '511', h: '809' },
-    { tpi: 8, type: 'paper_center', t: '409', h: '610' },
-    { tpi: 8, type: 'card_center', t: '309', h: '611' },
-    { tpi: 8, type: 'card_side', t: '509', h: '811' },
-    { tpi: 12, type: 'paper_center', t: '407', h: '612' },
-    { tpi: 12, type: 'card_center', t: '307', h: '613' },
-    { tpi: 12, type: 'paper_side', t: '607', h: '812' },
-    { tpi: 12, type: 'card_side', t: '507', h: '813' },
-    { tpi: 16, type: 'paper_center', t: '405', h: '614' },
-    { tpi: 16, type: 'card_center', t: '305', h: '615' },
-    { tpi: 16, type: 'paper_side', t: '605', h: '814' },
-    { tpi: 16, type: 'card_side', t: '505', h: '815' },
-    { tpi: 30, type: 'paper_center_micro', t: '416', h: '303' },
-    { tpi: 30, type: 'paper_side_micro', t: '616', h: '301' },
-    { tpi: 40, type: 'paper_center_micro', t: '417', h: null },
-    { tpi: 40, type: 'paper_side_micro', t: '617', h: '401' },
-    { tpi: 50, type: 'paper_center_micro', t: '418', h: null },
-    { tpi: 50, type: 'paper_side_micro', t: '618', h: '501' },
-    { tpi: null, type: 'paper_center_score', t: '401', h: null },
-    { tpi: null, type: 'card_center_score', t: '301', h: '627-2' },
-    { tpi: null, type: 'card_centre_slit', t: '303', h: '631' }
-  ];
-
   const machineSelect = document.getElementById('lithoMachineSelect');
   const tpiOptions = document.getElementById('lithoTpiOptions');
   const brandOptions = document.getElementById('lithoBrandOptions');
@@ -62,11 +38,14 @@
     tpi: null,
     brand: null,
     type: null,
+    defaultPricePerPacket: DEFAULT_UNIT_PRICE,
+    products: [],
     quantity: null,
     quantityConfirmed: false
   };
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadProducts();
     loadMachines();
     renderTpiOptions();
     renderBrandOptions();
@@ -74,6 +53,36 @@
     setupEvents();
     updateSummary();
   });
+
+  async function loadProducts() {
+    try {
+      const response = await fetch(dataUrl, { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch litho data (${response.status})`);
+      }
+      const payload = await response.json();
+      state.defaultPricePerPacket = Number(payload.default_price_per_packet) || DEFAULT_UNIT_PRICE;
+      state.products = Array.isArray(payload.products)
+        ? payload.products.map(normalizeProduct).filter(Boolean)
+        : [];
+    } catch (error) {
+      console.error('litho_perforation.js: unable to load products', error);
+      state.defaultPricePerPacket = DEFAULT_UNIT_PRICE;
+      state.products = [];
+      showToast('Warning', 'Litho rates could not be loaded. Using default pricing for now.', 'warning');
+    }
+  }
+
+  function normalizeProduct(product) {
+    if (!product || !product.type) return null;
+    return {
+      tpi: product.tpi === null || product.tpi === undefined ? null : Number(product.tpi),
+      type: product.type,
+      t: product.thompson_code || null,
+      h: product.hs_boyd_code || null,
+      price_per_packet: Number(product.price_per_packet) || state.defaultPricePerPacket
+    };
+  }
 
   function setupEvents() {
     if (machineSelect) {
@@ -183,7 +192,7 @@
   }
 
   function getAvailableEntries() {
-    return CODES.filter(entry => {
+    return state.products.filter(entry => {
       const tpiMatches = entry.tpi === state.tpi || entry.tpi === null;
       return tpiMatches && hasCodeForBrand(entry);
     });
@@ -210,6 +219,14 @@
     return parts.join(' / ') || 'N/A';
   }
 
+  function getUnitPrice(entry) {
+    const price = Number(entry && entry.price_per_packet);
+    if (Number.isFinite(price) && price > 0) {
+      return price;
+    }
+    return state.defaultPricePerPacket || DEFAULT_UNIT_PRICE;
+  }
+
   function optionButton(kind, value, title, active, note = '') {
     return `
       <button type="button" class="chem-option ${active ? 'chem-option--active' : ''}" data-${kind}="${sanitize(value)}" aria-pressed="${active ? 'true' : 'false'}">
@@ -223,7 +240,8 @@
     quantityInput.disabled = false;
     quantityInput.placeholder = 'Enter number of packets';
     quantityInput.focus();
-    quantityHelper.textContent = `Rs. ${UNIT_PRICE.toFixed(2)} per packet.`;
+    const entry = getSelectedEntry();
+    quantityHelper.textContent = `Rs. ${getUnitPrice(entry).toFixed(2)} per packet.`;
   }
 
   function resetQuantity() {
@@ -250,10 +268,11 @@
 
     const complete = Boolean(entry && state.brand && state.quantityConfirmed && state.quantity > 0);
     if (complete) {
-      const subtotal = UNIT_PRICE * state.quantity;
+      const unitPrice = getUnitPrice(entry);
+      const subtotal = unitPrice * state.quantity;
       const gstAmount = subtotal * (GST_PERCENT / 100);
       const total = subtotal + gstAmount;
-      items.push(summaryItem('Packets', String(state.quantity), `Rs. ${UNIT_PRICE.toFixed(2)} x ${state.quantity}`));
+      items.push(summaryItem('Packets', String(state.quantity), `Rs. ${unitPrice.toFixed(2)} x ${state.quantity}`));
       items.push(summaryItem('Subtotal', `Rs. ${subtotal.toFixed(2)}`));
       items.push(summaryItem('GST', `Rs. ${gstAmount.toFixed(2)} (${GST_PERCENT}%)`));
       items.push(summaryItem('Total', `Rs. ${total.toFixed(2)}`));
@@ -277,7 +296,8 @@
       return;
     }
 
-    const subtotal = UNIT_PRICE * state.quantity;
+    const unitPrice = getUnitPrice(entry);
+    const subtotal = unitPrice * state.quantity;
     const gstAmount = subtotal * (GST_PERCENT / 100);
     const total = subtotal + gstAmount;
     const codeLabel = formatCodes(entry);
@@ -291,7 +311,7 @@
       rule_type: TYPES[entry.type],
       rule_type_id: entry.type,
       product_code: codeLabel,
-      unit_price: UNIT_PRICE,
+      unit_price: unitPrice,
       quantity: state.quantity,
       packets: state.quantity,
       discount_percent: 0,
@@ -302,7 +322,7 @@
       image: 'images/litho-perforation-placeholder.jpg',
       added_at: new Date().toISOString(),
       calculations: {
-        unit_price: UNIT_PRICE,
+        unit_price: unitPrice,
         quantity: state.quantity,
         subtotal,
         discount_percent: 0,

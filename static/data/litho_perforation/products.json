@@ -1,0 +1,27 @@
+{
+  "default_price_per_packet": 3000,
+  "products": [
+    { "tpi": 6, "type": "card_center", "thompson_code": "311", "hs_boyd_code": "609", "price_per_packet": 3000 },
+    { "tpi": 6, "type": "card_side", "thompson_code": "511", "hs_boyd_code": "809", "price_per_packet": 3000 },
+    { "tpi": 8, "type": "paper_center", "thompson_code": "409", "hs_boyd_code": "610", "price_per_packet": 3000 },
+    { "tpi": 8, "type": "card_center", "thompson_code": "309", "hs_boyd_code": "611", "price_per_packet": 3000 },
+    { "tpi": 8, "type": "card_side", "thompson_code": "509", "hs_boyd_code": "811", "price_per_packet": 3000 },
+    { "tpi": 12, "type": "paper_center", "thompson_code": "407", "hs_boyd_code": "612", "price_per_packet": 3000 },
+    { "tpi": 12, "type": "card_center", "thompson_code": "307", "hs_boyd_code": "613", "price_per_packet": 3000 },
+    { "tpi": 12, "type": "paper_side", "thompson_code": "607", "hs_boyd_code": "812", "price_per_packet": 3000 },
+    { "tpi": 12, "type": "card_side", "thompson_code": "507", "hs_boyd_code": "813", "price_per_packet": 3000 },
+    { "tpi": 16, "type": "paper_center", "thompson_code": "405", "hs_boyd_code": "614", "price_per_packet": 3000 },
+    { "tpi": 16, "type": "card_center", "thompson_code": "305", "hs_boyd_code": "615", "price_per_packet": 3000 },
+    { "tpi": 16, "type": "paper_side", "thompson_code": "605", "hs_boyd_code": "814", "price_per_packet": 3000 },
+    { "tpi": 16, "type": "card_side", "thompson_code": "505", "hs_boyd_code": "815", "price_per_packet": 3000 },
+    { "tpi": 30, "type": "paper_center_micro", "thompson_code": "416", "hs_boyd_code": "303", "price_per_packet": 3000 },
+    { "tpi": 30, "type": "paper_side_micro", "thompson_code": "616", "hs_boyd_code": "301", "price_per_packet": 3000 },
+    { "tpi": 40, "type": "paper_center_micro", "thompson_code": "417", "hs_boyd_code": null, "price_per_packet": 3000 },
+    { "tpi": 40, "type": "paper_side_micro", "thompson_code": "617", "hs_boyd_code": "401", "price_per_packet": 3000 },
+    { "tpi": 50, "type": "paper_center_micro", "thompson_code": "418", "hs_boyd_code": null, "price_per_packet": 3000 },
+    { "tpi": 50, "type": "paper_side_micro", "thompson_code": "618", "hs_boyd_code": "501", "price_per_packet": 3000 },
+    { "tpi": null, "type": "paper_center_score", "thompson_code": "401", "hs_boyd_code": null, "price_per_packet": 3000 },
+    { "tpi": null, "type": "card_center_score", "thompson_code": "301", "hs_boyd_code": "627-2", "price_per_packet": 3000 },
+    { "tpi": null, "type": "card_centre_slit", "thompson_code": "303", "hs_boyd_code": "631", "price_per_packet": 3000 }
+  ]
+}

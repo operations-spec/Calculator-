@@ -891,6 +891,12 @@
                 let isPinnedOther = false;
                 let otherClicked = false;
 
+                const clearOtherProductsHighlight = () => {
+                    otherProductsToggle.classList.remove('nav-link--hover');
+                    otherProductsToggle.classList.remove('nav-link--pinned');
+                    isPinnedOther = false;
+                };
+
                 otherDropdown.addEventListener('mouseenter', () => {
                     isHoveringOther = true;
                     otherProductsToggle.classList.add('nav-link--hover');
@@ -901,9 +907,9 @@
 
                 otherDropdown.addEventListener('mouseleave', () => {
                     isHoveringOther = false;
+                    otherProductsToggle.classList.remove('nav-link--hover');
                     if (!isPinnedOther) {
                         otherDropdownInstance.hide();
-                        otherProductsToggle.classList.remove('nav-link--hover');
                     }
                 });
 
@@ -925,6 +931,12 @@
                     isPinnedOther = false;
                     if (!isHoveringOther) {
                         otherProductsToggle.classList.remove('nav-link--hover');
+                    }
+                });
+
+                document.addEventListener('click', event => {
+                    if (!otherDropdown.contains(event.target)) {
+                        clearOtherProductsHighlight();
                     }
                 });
             }
