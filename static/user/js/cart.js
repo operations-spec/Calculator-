@@ -1616,12 +1616,13 @@ function updateCartTotals() {
                         discount_percent: discountPercent,
                         gst_percent: gstPercent
                     });
-                } else if (type === 'creasing_matrix') {
+                } else if (type === 'creasing_matrix' || type === 'litho_perforation') {
                     const quantityInput = item.querySelector('.quantity-input');
                     const rawQuantity = quantityInput?.value
                         ?? item.getAttribute('data-quantity')
                         ?? item.dataset.quantity
                         ?? item.getAttribute('data-quantity-rolls')
+                        ?? item.getAttribute('data-packets')
                         ?? '1';
                     const quantity = Math.max(1, Math.round(parseFloat(rawQuantity) || 1));
                     const unitPrice = parseFloat(item.getAttribute('data-unit-price') || item.dataset.unitPrice || '0');
@@ -1644,10 +1645,11 @@ function updateCartTotals() {
                     item.setAttribute('data-unit-price', unitPrice.toString());
 
                     updateItemDisplay(item, {
-                        type: 'creasing_matrix',
+                        type,
                         unit_price: unitPrice,
                         quantity,
                         quantity_rolls: quantity,
+                        packets: quantity,
                         discount_percent: discountPercent,
                         gst_percent: gstPercent,
                         subtotal: itemSubtotal,
@@ -2118,7 +2120,8 @@ function resolveConfiguratorPath(productType) {
         creasing_matrix: '/creasing-matrix',
         blanket: '/blankets',
         mpack: '/mpacks',
-        spray_powder: '/spray-powder'
+        spray_powder: '/spray-powder',
+        litho_perforation: '/litho-perforation-rules'
     };
 
     if (routeMap[normalized]) {
@@ -2858,6 +2861,13 @@ function updateItemDisplay(item, data) {
         item.dataset.quantityRolls = data.quantity_rolls ?? quantity;
         item.dataset.discountPercent = data.discount_percent || 0;
         item.dataset.gstPercent = data.gst_percent || 18;
+    } else if (type === 'litho_perforation') {
+        const quantity = data.quantity ?? data.packets ?? 1;
+        item.dataset.unitPrice = data.unit_price || 0;
+        item.dataset.quantity = quantity;
+        item.dataset.packets = data.packets ?? quantity;
+        item.dataset.discountPercent = data.discount_percent || 0;
+        item.dataset.gstPercent = data.gst_percent || 18;
     }
 
     // Sync additional metadata used in the descriptive section
@@ -2884,7 +2894,14 @@ function updateItemDisplay(item, data) {
         'quantity_litre',
         'packs_needed',
         'total_litre',
-        'surplus_litre'
+        'surplus_litre',
+        'tpi',
+        'brand',
+        'brand_id',
+        'rule_type',
+        'rule_type_id',
+        'product_code',
+        'packets'
     ];
 
     metadataFields.forEach(field => {
@@ -3465,9 +3482,9 @@ function updateItemDisplay(item, data) {
         if (hiddenTotalInput) {
             hiddenTotalInput.value = total.toFixed(2);
         }
-    } else if (type === 'creasing_matrix') {
+    } else if (type === 'creasing_matrix' || type === 'litho_perforation') {
         const rawUnitPrice = data.unit_price ?? item.getAttribute('data-unit-price');
-        const rawQuantity = data.quantity ?? data.quantity_rolls ?? item.getAttribute('data-quantity') ?? item.getAttribute('data-quantity-rolls');
+        const rawQuantity = data.quantity ?? data.quantity_rolls ?? data.packets ?? item.getAttribute('data-quantity') ?? item.getAttribute('data-quantity-rolls') ?? item.getAttribute('data-packets');
         const rawDiscountPercent = data.discount_percent ?? item.getAttribute('data-discount-percent');
         const rawGstPercent = data.gst_percent ?? item.getAttribute('data-gst-percent');
 
@@ -3484,7 +3501,11 @@ function updateItemDisplay(item, data) {
 
         item.dataset.unitPrice = unitPrice.toString();
         item.dataset.quantity = quantity.toString();
-        item.dataset.quantityRolls = quantity.toString();
+        if (type === 'creasing_matrix') {
+            item.dataset.quantityRolls = quantity.toString();
+        } else {
+            item.dataset.packets = quantity.toString();
+        }
         item.dataset.discountPercent = discountPercent.toString();
         item.dataset.gstPercent = gstPercent.toString();
 

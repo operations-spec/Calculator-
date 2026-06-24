@@ -570,6 +570,16 @@
                             {% if item.total_length_m %}data-total-length-m="{{ item.total_length_m }}"{% endif %}
                             data-discount-percent="{{ item.discount_percent|default(0) }}"
                             data-gst-percent="{{ item.gst_percent|default(18) }}"
+                        {% elif item.type == 'litho_perforation' %}
+                            data-unit-price="{{ item.unit_price|default(0) }}"
+                            data-quantity="{{ item.quantity|default(item.packets|default(1)) }}"
+                            {% if item.tpi %}data-tpi="{{ item.tpi }}"{% endif %}
+                            {% if item.brand %}data-brand="{{ item.brand }}"{% endif %}
+                            {% if item.rule_type %}data-rule-type="{{ item.rule_type }}"{% endif %}
+                            {% if item.product_code %}data-product-code="{{ item.product_code }}"{% endif %}
+                            {% if item.packets %}data-packets="{{ item.packets }}"{% endif %}
+                            data-discount-percent="{{ item.discount_percent|default(0) }}"
+                            data-gst-percent="{{ item.gst_percent|default(18) }}"
                         {% endif %}
                          data-rate-per-sqmt="{{ item.rate_per_sqmt|default(0) }}"
                          {% if item.machine %}data-machine="{{ item.machine }}"{% endif %}
@@ -770,6 +780,13 @@
                                                     <p class="mb-1"><strong>Area:</strong> {{ "%.2f"|format((item.length|float * item.width|float) / 1000000) }} m² ({{ "%.2f"|format((item.length|float * item.width|float)) }} mm²)</p>
                                                 {% endif %}
 
+                                                {% if item.type == 'litho_perforation' %}
+                                                    {% if item.tpi %}<p class="mb-1"><strong>TPI:</strong> {{ item.tpi }}</p>{% endif %}
+                                                    {% if item.brand %}<p class="mb-1"><strong>Brand:</strong> {{ item.brand }}</p>{% endif %}
+                                                    {% if item.rule_type %}<p class="mb-1"><strong>Type:</strong> {{ item.rule_type }}</p>{% endif %}
+                                                    {% if item.product_code %}<p class="mb-1"><strong>Product code:</strong> {{ item.product_code }}</p>{% endif %}
+                                                {% endif %}
+
                                                 {% if item.bar_type %}
                                                     <p class="mb-1"><strong>Barring:</strong> {{ item.bar_type }}</p>
                                                 {% endif %}
@@ -792,7 +809,7 @@
                                             </div>
                                             {% endif %}
                                             <div class="price-row d-flex justify-content-between align-items-center">
-                                                <span class="price-label">{% if item.type == 'creasing_matrix' %}Packets:{% else %}Quantity:{% endif %}</span>
+                                                <span class="price-label">{% if item.type in ['creasing_matrix', 'litho_perforation'] %}Packets:{% else %}Quantity:{% endif %}</span>
                                                 <div class="d-flex align-items-center ms-auto">
                                                     <div class="input-group" style="width: 120px;">
                                                         <button class="btn btn-outline-secondary quantity-decrease" type="button" data-index="{{ loop.index0 }}" style="padding: 0.25rem 0.5rem; min-width: 36px; transition: all 0.2s ease;">

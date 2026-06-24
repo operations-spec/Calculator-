@@ -4069,6 +4069,45 @@ def add_to_cart():
             if product_type == 'rule':
                 patch_rule_metadata(product, data)
 
+            if product_type == 'litho_perforation':
+                quantity = int(product.get('quantity', 1) or 1)
+                unit_price = float(product.get('unit_price', 0) or 0)
+                discount_percent = float(product.get('discount_percent', 0) or 0)
+                gst_percent = float(product.get('gst_percent', 18) or 18)
+                subtotal = unit_price * quantity
+                discount_amount = subtotal * (discount_percent / 100)
+                discounted_subtotal = subtotal - discount_amount
+                gst_amount = discounted_subtotal * (gst_percent / 100)
+                final_total = discounted_subtotal + gst_amount
+
+                product.update({
+                    'tpi': data.get('tpi'),
+                    'brand': data.get('brand', ''),
+                    'brand_id': data.get('brand_id', ''),
+                    'rule_type': data.get('rule_type', ''),
+                    'rule_type_id': data.get('rule_type_id', ''),
+                    'product_code': data.get('product_code', ''),
+                    'packets': quantity,
+                    'subtotal': round(subtotal, 2),
+                    'discount_amount': round(discount_amount, 2),
+                    'discounted_subtotal': round(discounted_subtotal, 2),
+                    'gst_amount': round(gst_amount, 2),
+                    'total_price': round(final_total, 2),
+                    'total': round(final_total, 2)
+                })
+
+                product['calculations'] = {
+                    'unit_price': round(unit_price, 2),
+                    'quantity': quantity,
+                    'subtotal': round(subtotal, 2),
+                    'discount_percent': discount_percent,
+                    'discount_amount': round(discount_amount, 2),
+                    'discounted_subtotal': round(discounted_subtotal, 2),
+                    'gst_percent': gst_percent,
+                    'gst_amount': round(gst_amount, 2),
+                    'final_total': round(final_total, 2)
+                }
+
             if product_type in ('chemical', 'maintenance'):
                 pack_size = to_float(data.get('pack_size_litre'))
                 quantity_litre = to_float(data.get('quantity_litre'))
@@ -4358,7 +4397,8 @@ def update_cart_item():
                'standard_length_mm', 'standard_width_mm', 'standard_area_sqm',
                'display_length_mm', 'display_width_mm', 'display_size_label',
                'standard_size_label', 'custom_size_label', 'cut_to_custom_size',
-               'along_mm', 'across_mm']:
+               'along_mm', 'across_mm', 'tpi', 'brand', 'brand_id',
+               'rule_type', 'rule_type_id', 'product_code', 'packets']:
         if key in data:
             item[key] = data[key]
 

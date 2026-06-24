@@ -491,6 +491,7 @@
         const navLinks = document.querySelectorAll('.nav-link');
         for (const link of navLinks) {
             if (link.id === 'homeLink') continue;
+            if (link.getAttribute('href') === '#' || link.classList.contains('dropdown-toggle')) continue;
             
             let linkPath = new URL(link.href, window.location.origin).pathname.toLowerCase();
             linkPath = linkPath.endsWith('/') && linkPath !== '/' ? linkPath.slice(0, -1) : linkPath;

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}Litho Perforation Rules - Product Calculator{% endblock %}
 
 {% block extra_css %}
@@ -10,96 +10,108 @@
 <div class="chemicals-page" id="lithoPerforationPage">
   <div class="chemicals-page__header">
     <div class="chemicals-page__title">
-      <div class="d-flex align-items-center gap-3 flex-wrap">
-        <div>
-          <h2 class="mb-1">Litho Perforation Rules</h2>
-          <p class="text-muted mb-0">Engineered perforation rules curated for litho die-cutting teams. Digital workflows are coming soon—share your specs so we can quote immediately.</p>
-        </div>
-        <span class="badge bg-secondary text-uppercase">Coming soon</span>
-      </div>
+      <h2>Litho Perforation Rules</h2>
+      <p class="text-muted mb-0">Select TPI, brand and rule type, then confirm packets for a GST-ready quotation.</p>
     </div>
   </div>
 
   <div class="chemicals-page__content">
     <div class="chem-layout">
-      <form class="chem-configurator" aria-disabled="true">
-        <div class="mb-3" id="machineControls">
+      <form class="chem-configurator" id="lithoPerforationConfigurator" novalidate>
+        <section class="chem-step chem-step--compact" id="lithoStepMachine">
+          <div class="chem-step__header">
+            <h3 class="chem-step__title">1. Select machine</h3>
+            <p class="chem-step__helper">Use this to tag the quote against a specific press.</p>
+          </div>
           <div class="d-flex align-items-end gap-2 flex-wrap">
             <div class="flex-grow-1">
-              <label for="lithoMachineSelect" class="form-label">Select Machine/Model <span class="text-muted small">(optional)</span>:</label>
-              <select id="lithoMachineSelect" class="form-select form-select-sm" aria-label="Select Machine" disabled>
+              <label for="lithoMachineSelect" class="form-label">Machine / Model</label>
+              <select id="lithoMachineSelect" class="form-select" aria-label="Select Machine">
                 <option value="">-- Select Machine (optional) --</option>
               </select>
             </div>
             <div class="d-flex gap-2">
-              <a href="{{ url_for('add_machine', next=request.path) }}" class="btn btn-outline-gold">
+              <a href="{{ url_for('add_machine', next=url_for('litho_perforation_rules')) }}" class="btn btn-outline-gold">
                 <i class="fas fa-plus"></i> New Machine
               </a>
             </div>
           </div>
-        </div>
-        <section class="chem-step chem-step--compact">
+        </section>
+
+        <section class="chem-step" id="lithoStepTpi">
           <div class="chem-step__header">
-            <h3 class="chem-step__title">1. Share your perforation profile</h3>
-            <p class="chem-step__helper">Pitch, TPI, bevel style and manufacturer (STAR, CITO, Diamond etc.).</p>
+            <h3 class="chem-step__title">2. Select TPI</h3>
+            <p class="chem-step__helper">Choose from the available perforation pitches.</p>
           </div>
-          <div class="chem-placeholder mb-0">
-            Configurator view is being finalised. Email your present rule specs—labels, codes or CAD extracts.
+          <div class="chem-options" id="lithoTpiOptions" role="radiogroup"></div>
+        </section>
+
+        <section class="chem-step" id="lithoStepBrand">
+          <div class="chem-step__header">
+            <h3 class="chem-step__title">3. Select brand</h3>
+            <p class="chem-step__helper">Product code will follow the selected brand.</p>
+          </div>
+          <div class="chem-options" id="lithoBrandOptions" role="radiogroup"></div>
+        </section>
+
+        <section class="chem-step" id="lithoStepType">
+          <div class="chem-step__header">
+            <h3 class="chem-step__title">4. Select type</h3>
+            <p class="chem-step__helper">Unavailable combinations are hidden after TPI selection.</p>
+          </div>
+          <div class="chem-options" id="lithoTypeOptions" role="radiogroup">
+            <p class="chem-placeholder mb-0">Select TPI first.</p>
           </div>
         </section>
 
-        <section class="chem-step chem-step--compact">
+        <section class="chem-step chem-step--compact chem-step--quantity" id="lithoStepQuantity">
           <div class="chem-step__header">
-            <h3 class="chem-step__title">2. Pick packaging expectations</h3>
-            <p class="chem-step__helper">Packet vs coil, bundle sizes, and preferred nicking plans.</p>
+            <h3 class="chem-step__title">5. Enter required packets</h3>
+            <p class="chem-step__helper">All Litho Perforation products are priced at Rs. 3000 per packet for now.</p>
           </div>
-          <div class="chem-placeholder mb-0">
-            We&rsquo;re onboarding packet/coil matrices. Mention your default quantities and we&rsquo;ll mirror them.
+          <div class="chem-quantity">
+            <label class="form-label" for="lithoQuantityInput">Required packets</label>
+            <input type="number"
+                   class="form-control"
+                   id="lithoQuantityInput"
+                   name="quantity"
+                   min="1"
+                   step="1"
+                   placeholder="Select type first"
+                   inputmode="numeric"
+                   disabled>
+            <div class="chem-step__helper" id="lithoQuantityHelper">Choose a type to enable packet entry.</div>
+            <div class="chem-quantity__actions">
+              <button type="button" class="btn btn-outline-gold chem-quantity__confirm" id="lithoConfirmQuantityBtn" disabled>
+                <i class="fas fa-check"></i>
+                <span>Done</span>
+              </button>
+            </div>
           </div>
-        </section>
-
-        <section class="chem-step chem-step--compact">
-          <div class="chem-step__header">
-            <h3 class="chem-step__title">3. Quantities &amp; shipping</h3>
-            <p class="chem-step__helper">Tell us lengths and dispatch city—we&rsquo;ll build the proforma.</p>
-          </div>
-          <div class="chem-placeholder mb-0">
-            We&rsquo;ll translate your quantity plan into whole packets/coils and add GST-ready pricing.</div>
         </section>
       </form>
 
-      <section class="chem-summary" aria-live="polite">
-        <h3 class="chem-summary__title">What we&rsquo;re preparing</h3>
-        <div class="chem-summary__body">
-          <ul class="list-unstyled mb-3">
-            <li class="d-flex align-items-start mb-2"><i class="bi bi-check2-circle text-success me-2"></i><span>Profile-aware pricing (fine, medium, heavy) with material &amp; manufacturer filters.</span></li>
-            <li class="d-flex align-items-start mb-2"><i class="bi bi-check2-circle text-success me-2"></i><span>Support for nicking plans, bundle sizes and ready-to-ship coil/packet formats.</span></li>
-            <li class="d-flex align-items-start"><i class="bi bi-check2-circle text-success me-2"></i><span>Fast cart handoff into quotation workflows with GST-ready breakdowns.</span></li>
-          </ul>
-          <div class="alert alert-info mb-0">
-            <strong>Need it sooner?</strong> Send perforation profile, material, thickness and run length to <a href="mailto:support@chemo.in" class="alert-link">support@chemo.in</a> or your CGIPL contact.
-          </div>
+      <section class="chem-summary" id="lithoSummary" aria-live="polite">
+        <h3 class="chem-summary__title">Selection summary</h3>
+        <div class="chem-summary__body" id="lithoSummaryBody">
+          <p class="chem-placeholder mb-0">Start by selecting a TPI.</p>
         </div>
-        <div class="chem-summary__discount mt-3">
-          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <label class="form-label mb-0" for="lithoDiscountInput">Discount (%)</label>
-            <small class="text-muted">Config access opens once the tool is live.</small>
-          </div>
-          <div class="input-group input-group-sm">
-            <input type="number" class="form-control" id="lithoDiscountInput" value="0" min="0" max="100" step="0.5" disabled>
-            <span class="input-group-text">%</span>
-          </div>
-        </div>
-        <div class="chem-summary__pricing mt-3">
-          <p class="chem-placeholder mb-0">Pricing preview will appear here after the configurator launches.</p>
-        </div>
-        <div class="chem-summary__actions pt-3 d-flex gap-2 flex-wrap">
-          <a href="mailto:support@chemo.in" class="btn btn-outline-gold"><i class="bi bi-envelope me-1"></i>Email team</a>
-          <a href="{{ url_for('cutting_rule') }}" class="btn btn-outline-secondary"><i class="bi bi-scissors me-1"></i>Cutting &amp; Creasing</a>
-          <a href="{{ url_for('index') }}" class="btn btn-dark"><i class="bi bi-arrow-left-circle me-1"></i>Back to Home</a>
-        </div>
+        <div class="chem-summary__actions pt-3" id="lithoSummaryActions"></div>
       </section>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script src="{{ url_for('static', filename='user/js/litho_perforation.js') }}"></script>
+<script src="{{ url_for('static', filename='user/js/cart.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof updateCartCount === 'function') {
+      updateCartCount();
+    }
+  });
+</script>
 {% endblock %}
