@@ -1,0 +1,85 @@
+{
+  "gst_percent": 18,
+  "default_roll_price": 15000,
+  "default_box_price": 15000,
+  "types": [
+    {
+      "id": "dry",
+      "label": "Dry",
+      "products": [
+        {
+          "id": "dry_roll_750",
+          "label": "750 mm",
+          "width_mm": 750,
+          "length_m": 500,
+          "packaging": "roll",
+          "unit_label": "roll",
+          "unit_price": 15000
+        },
+        {
+          "id": "dry_roll_1070",
+          "label": "1070 mm",
+          "width_mm": 1070,
+          "length_m": 500,
+          "packaging": "roll",
+          "unit_label": "roll",
+          "unit_price": 19475
+        },
+        {
+          "id": "dry_roll_1080",
+          "label": "1080 mm",
+          "width_mm": 1080,
+          "length_m": 500,
+          "packaging": "roll",
+          "unit_label": "roll",
+          "unit_price": 19675
+        },
+        {
+          "id": "dry_roll_1090",
+          "label": "1090 mm",
+          "width_mm": 1090,
+          "length_m": 500,
+          "packaging": "roll",
+          "unit_label": "roll",
+          "unit_price": 19900
+        },
+        {
+          "id": "dry_box_1040_13_5",
+          "label": "1040 x 13.50 MTR (DRY)",
+          "width_mm": 1040,
+          "length_m": 13.5,
+          "packaging": "box",
+          "unit_label": "box",
+          "pcs_per_box": 20,
+          "unit_price": 15000
+        }
+      ]
+    },
+    {
+      "id": "wet",
+      "label": "Wet",
+      "products": [
+        {
+          "id": "wet_box_774_9",
+          "label": "774 x 9 MTR (WET)",
+          "width_mm": 774,
+          "length_m": 9,
+          "packaging": "box",
+          "unit_label": "box",
+          "pcs_per_box": 20,
+          "unit_price": 15000
+        },
+        {
+          "id": "wet_box_924_9",
+          "label": "924 x 9 MTR (WET)",
+          "width_mm": 924,
+          "length_m": 9,
+          "packaging": "box",
+          "unit_label": "box",
+          "pcs_per_box": 20,
+          "unit_price": 15000
+        }
+      ]
+    }
+  ]
+}

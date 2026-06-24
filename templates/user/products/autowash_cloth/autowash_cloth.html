@@ -13,21 +13,20 @@
       <div class="d-flex align-items-center gap-3 flex-wrap">
         <div>
           <h2 class="mb-1">Autowash Cloth</h2>
-          <p class="text-muted mb-0">Automatic blanket-wash rolls for heatset &amp; sheetfed presses. Configurator ships soon—share your press specs for immediate support.</p>
+          <p class="text-muted mb-0">Select dry or wet autowash cloth, choose the roll or box size, then confirm quantity for GST-ready pricing.</p>
         </div>
-        <span class="badge bg-secondary text-uppercase">Coming soon</span>
       </div>
     </div>
   </div>
 
   <div class="chemicals-page__content">
     <div class="chem-layout">
-      <form class="chem-configurator" aria-disabled="true">
+      <form class="chem-configurator" id="autowashConfigurator" novalidate>
         <div class="mb-3" id="machineControls">
           <div class="d-flex align-items-end gap-2 flex-wrap">
             <div class="flex-grow-1">
               <label for="autowashMachineSelect" class="form-label">Select Machine/Model <span class="text-muted small">(optional)</span>:</label>
-              <select id="autowashMachineSelect" class="form-select form-select-sm" aria-label="Select Machine" disabled>
+              <select id="autowashMachineSelect" class="form-select form-select-sm" aria-label="Select Machine">
                 <option value="">-- Select Machine (optional) --</option>
               </select>
             </div>
@@ -38,63 +37,75 @@
             </div>
           </div>
         </div>
-        <section class="chem-step chem-step--compact">
+
+        <section class="chem-step" id="autowashStepType">
           <div class="chem-step__header">
-            <h3 class="chem-step__title">1. Press + washer preset</h3>
-            <p class="chem-step__helper">Komori, Heidelberg, Manroland, KBA, custom widths.</p>
+            <h3 class="chem-step__title">1. Select type</h3>
+            <p class="chem-step__helper">Dry rolls and boxes, or wet boxes.</p>
           </div>
-          <div class="chem-placeholder mb-0">Send press model, washer make, and trim width so we can map compatible rolls while UI is finalised.</div>
+          <div class="chem-options chem-options--product" id="autowashTypeOptions" role="radiogroup" aria-live="polite">
+            <p class="chem-placeholder mb-0">Loading autowash types...</p>
+          </div>
         </section>
 
-        <section class="chem-step chem-step--compact">
+        <section class="chem-step" id="autowashStepProduct">
           <div class="chem-step__header">
-            <h3 class="chem-step__title">2. Material &amp; solvent pairing</h3>
-            <p class="chem-step__helper">Polyester, viscose blends, lint-free recipes.</p>
+            <h3 class="chem-step__title">2. Choose size</h3>
+            <p class="chem-step__helper">Dry rolls are 500 m. Box items are packed 20 pcs per box.</p>
           </div>
-          <div class="chem-placeholder mb-0">Let us know preferred chemistry or OEM approvals—our team will match stock variants.</div>
+          <div class="chem-options chem-options--formats" id="autowashProductOptions" role="radiogroup" aria-live="polite">
+            <p class="chem-placeholder mb-0">Select dry or wet first.</p>
+          </div>
         </section>
 
-        <section class="chem-step chem-step--compact">
+        <section class="chem-step chem-step--compact chem-step--quantity" id="autowashStepQuantity">
           <div class="chem-step__header">
-            <h3 class="chem-step__title">3. Roll dimensions &amp; quantity</h3>
-            <p class="chem-step__helper">Width, roll length, core ID, packs per shipment.</p>
+            <h3 class="chem-step__title">3. Enter quantity</h3>
+            <p class="chem-step__helper">Enter rolls for dry roll items, or boxes for boxed items.</p>
           </div>
-          <div class="chem-placeholder mb-0">We&rsquo;ll convert your cycle counts into cartons and highlight MOQ timelines.</div>
+          <div class="chem-quantity">
+            <label class="form-label" for="autowashQuantityInput">Quantity</label>
+            <input type="number"
+                   class="form-control"
+                   id="autowashQuantityInput"
+                   name="quantity"
+                   min="1"
+                   step="1"
+                   placeholder="Select product first"
+                   inputmode="numeric"
+                   disabled>
+            <div class="chem-step__helper" id="autowashQuantityHelper">Choose a product to enable quantity entry.</div>
+            <div class="chem-quantity__actions">
+              <button type="button" class="btn btn-outline-gold chem-quantity__confirm" id="autowashConfirmQuantityBtn" disabled>
+                <i class="fas fa-check"></i>
+                <span>Done</span>
+              </button>
+            </div>
+          </div>
         </section>
       </form>
 
-      <section class="chem-summary">
-        <h3 class="chem-summary__title">In the upcoming release</h3>
-        <div class="chem-summary__body">
-          <ul class="list-unstyled mb-3">
-            <li class="d-flex align-items-start mb-2"><i class="bi bi-check2-circle text-success me-2"></i><span>OEM/press presets with auto-trim calculations.</span></li>
-            <li class="d-flex align-items-start mb-2"><i class="bi bi-check2-circle text-success me-2"></i><span>Material selector with solvent compatibility guidance.</span></li>
-            <li class="d-flex align-items-start"><i class="bi bi-check2-circle text-success me-2"></i><span>Roll calculator pairing core IDs, lengths, packaging and GST-ready pricing.</span></li>
-          </ul>
-          <div class="alert alert-info mb-0">
-            <strong>Need immediate pricing?</strong> Email roll width, quantity and press model to <a class="alert-link" href="mailto:support@chemo.in">support@chemo.in</a> for same-day quotes.
-          </div>
+      <section class="chem-summary" id="autowashSummary" aria-live="polite">
+        <h3 class="chem-summary__title">Selection summary</h3>
+        <div class="chem-summary__body" id="autowashSummaryBody">
+          <p class="chem-summary__empty mb-0">Start by selecting dry or wet.</p>
         </div>
-        <div class="chem-summary__discount mt-3">
-          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <label class="form-label mb-0" for="autowashDiscountInput">Discount (%)</label>
-            <small class="text-muted">Configurator pricing unlocks once ordering goes live.</small>
-          </div>
-          <div class="input-group input-group-sm">
-            <input type="number" class="form-control" id="autowashDiscountInput" value="0" min="0" max="100" step="0.5" disabled>
-            <span class="input-group-text">%</span>
-          </div>
-        </div>
-        <div class="chem-summary__pricing mt-3">
-          <p class="chem-placeholder mb-0">Pricing preview will appear here after the configurator launches.</p>
-        </div>
-        <div class="chem-summary__actions pt-3 d-flex gap-2 flex-wrap">
-          <a href="mailto:support@chemo.in" class="btn btn-outline-gold"><i class="bi bi-envelope me-1"></i>Send specs</a>
-          <a href="{{ url_for('chemicals_maintenance') }}" class="btn btn-outline-secondary"><i class="bi bi-droplet me-1"></i>Chemicals</a>
-          <a href="{{ url_for('index') }}" class="btn btn-dark"><i class="bi bi-arrow-left-circle me-1"></i>Back to Home</a>
-        </div>
+        <div class="chem-summary__actions pt-3" id="autowashSummaryActions"></div>
       </section>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ super() }}
+<script src="{{ url_for('static', filename='user/js/autowash_cloth.js') }}"></script>
+<script src="{{ url_for('static', filename='user/js/cart.js') }}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof updateCartCount === 'function') {
+      updateCartCount();
+    }
+  });
+</script>
 {% endblock %}
