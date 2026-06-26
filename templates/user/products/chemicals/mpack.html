@@ -15,7 +15,7 @@
     .mpack-diagram-column {
       display: grid;
       grid-template-rows: auto auto;
-      row-gap: 0.35rem;
+      row-gap: 0.45rem;
       align-items: start;
     }
 
@@ -32,22 +32,23 @@
       gap: 0.45rem;
       width: 100%;
       min-height: 0;
-      padding: 0 0 0.25rem;
+      padding: 0 0 0.35rem;
     }
 
     .mpack-diagram-figure svg {
-      width: 100%;
+      width: 270px;
       height: auto;
-      max-width: 190px;
-      max-height: 82px;
-      margin: 0 auto;
+      max-width: 100%;
+      margin: 0;
       display: block;
+      transform: translate(-18px, 38px);
     }
 
     .mpack-diagram-figure img {
-      max-width: 190px;
-      max-height: 82px;
+      max-width: 260px;
+      max-height: 120px;
       object-fit: contain;
+      transform: translateY(14px);
     }
 
     .mpack-diagram-figure figcaption,
@@ -62,12 +63,12 @@
 
     @media (min-width: 768px) {
       .mpack-diagram-figure {
-        align-items: center !important;
-        text-align: center !important;
+        align-items: flex-start !important;
+        text-align: left !important;
       }
 
       .mpack-diagram-figure svg {
-        margin: 0 auto;
+        margin: 0;
       }
 
       .mpack-select-wrapper {
@@ -341,11 +342,11 @@
     }
 
     .mpack-diagram-visual {
-      height: 82px;
+      height: 112px;
       width: 100%;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      align-items: flex-end;
+      justify-content: flex-start;
     }
 
   @media (min-width: 768px) {
