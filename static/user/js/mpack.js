@@ -203,9 +203,9 @@ let manualInlineDiscountSummaryEl;
 let presetQuantityGroupEl;
 let presetDiscountGroupEl;
 let presetStandardColumnEl;
+let presetThicknessGroupEl;
+let manualThicknessGroupEl;
 
-let manualQuantitySlotEl;
-let manualDiscountSlotEl;
 let manualOnlyNoticeEl;
 let presetConfigRowEl;
 
@@ -227,8 +227,8 @@ function parseSizeLabel(label) {
   const match = label.match(/(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)/);
   if (!match) return null;
   return {
-    along: parseFloat(match[1]),
-    across: parseFloat(match[2])
+    across: parseFloat(match[1]),
+    along: parseFloat(match[2])
   };
 }
 
@@ -250,7 +250,7 @@ function formatDimensionLabel(acrossMm, alongMm) {
   if (!formattedAcross || !formattedAlong) {
     return '';
   }
-  return `${formattedAlong} x ${formattedAcross} mm`;
+  return `${formattedAcross} x ${formattedAlong} mm`;
 }
 
 function sanitizeOptionText(value) {
@@ -489,7 +489,8 @@ function updateManualInlineSummary({ show = false } = {}) {
   if (!manualEntryEnabled) {
     manualInlineSummaryRowEl.classList.add('d-none');
     manualInlineSizeSummaryEl.textContent = 'Enter measurements to see sq.m.';
-    manualInlineDiscountSummaryEl.textContent = 'Discount: --';
+    manualInlineDiscountSummaryEl.textContent = '';
+    manualInlineDiscountSummaryEl.classList.add('d-none');
     if (manualDetailsRowEl) {
       manualDetailsRowEl.classList.add('d-none');
     }
@@ -504,7 +505,8 @@ function updateManualInlineSummary({ show = false } = {}) {
   if (!show) {
     manualInlineSummaryRowEl.classList.remove('d-none');
     manualInlineSizeSummaryEl.textContent = 'Enter measurements to see sq.m.';
-    manualInlineDiscountSummaryEl.textContent = 'Discount: --';
+    manualInlineDiscountSummaryEl.textContent = '';
+    manualInlineDiscountSummaryEl.classList.add('d-none');
     return;
   }
 
@@ -518,41 +520,24 @@ function updateManualInlineSummary({ show = false } = {}) {
     manualInlineSizeSummaryEl.textContent = 'Enter measurements to see sq.m.';
   }
 
-  updateManualDiscountSummary();
+  manualInlineDiscountSummaryEl.textContent = '';
+  manualInlineDiscountSummaryEl.classList.add('d-none');
   manualInlineSummaryRowEl.classList.remove('d-none');
 }
 
 function relocateManualControlGroups(target) {
   if (!presetPrimaryColumnEl) return;
   if (!presetQuantityGroupEl || !presetDiscountGroupEl) return;
-  if (!manualQuantitySlotEl || !manualDiscountSlotEl) return;
 
-  if (target === 'manual') {
-    manualQuantitySlotEl.appendChild(presetQuantityGroupEl);
-    manualDiscountSlotEl.appendChild(presetDiscountGroupEl);
-  } else {
-    presetPrimaryColumnEl.appendChild(presetQuantityGroupEl);
-    presetPrimaryColumnEl.appendChild(presetDiscountGroupEl);
-  }
+  presetPrimaryColumnEl.appendChild(presetQuantityGroupEl);
+  presetPrimaryColumnEl.appendChild(presetDiscountGroupEl);
 }
 
 function updateManualDiscountSummary() {
   if (!manualInlineDiscountSummaryEl) return;
 
-  // Hide element by default
   manualInlineDiscountSummaryEl.classList.add('d-none');
-
-  if (!manualEntryEnabled || !hasValidCustomSize()) {
-    manualInlineDiscountSummaryEl.textContent = '';
-    return;
-  }
-
-  // Determine the roll/half-roll that will be cut from
-  const rollMeta = resolveRollForLength(customSize.along);
-  const effectiveArea = mmToSqm(customSize.across, rollMeta.effectiveLength);
-  const cutLabel = `Cut from size: ${rollMeta.rollLength} mm${rollMeta.usesHalfRoll ? ' (½ roll)' : ''} · ${effectiveArea.toFixed(3)} sq.m`;
-  manualInlineDiscountSummaryEl.textContent = cutLabel;
-  manualInlineDiscountSummaryEl.classList.remove('d-none');
+  manualInlineDiscountSummaryEl.textContent = '';
 }
 
 function showCutQuestion(resetRadios = true) {
@@ -643,16 +628,15 @@ function updateCustomSizeState({ showFeedback = false } = {}) {
     const cutSelect = document.getElementById('cutFromSizeSelect');
 
     if (isManualSource) {
-      // Determine the appropriate roll/half-roll length to be used for pricing
-      const rollMeta = resolveRollForLength(customSize.along);
-      const pricingAlong = rollMeta.effectiveLength;
+      const rollMeta = resolveRollForLength(customSize.across);
+      const pricingAcross = rollMeta.effectiveLength;
 
       standardSize = {
-        across: customSize.across,
-        along: rollMeta.rollLength,
-        effectiveAlong: rollMeta.effectiveLength,
-        area: mmToSqm(customSize.across, pricingAlong),
-        label: formatDimensionLabel(customSize.across, rollMeta.rollLength),
+        across: rollMeta.rollLength,
+        along: customSize.along,
+        effectiveAcross: pricingAcross,
+        area: mmToSqm(pricingAcross, customSize.along),
+        label: formatDimensionLabel(rollMeta.rollLength, customSize.along),
         rollLength: rollMeta.rollLength,
         usesHalfRoll: rollMeta.usesHalfRoll,
         halfLength: rollMeta.rollLength / 2
@@ -686,7 +670,7 @@ function updateCustomSizeState({ showFeedback = false } = {}) {
       if (cutStandardRowEl) {
         cutStandardRowEl.style.display = 'flex';
         if (standardAreaDisplayEl) {
-          standardAreaDisplayEl.textContent = mmToSqm(customSize.across, pricingAlong).toFixed(3);
+          standardAreaDisplayEl.textContent = mmToSqm(pricingAcross, customSize.along).toFixed(3);
         }
       }
 
@@ -731,7 +715,7 @@ function updateCustomSizeState({ showFeedback = false } = {}) {
       const activeThicknessValue = getSelectedThicknessValue();
       const thicknessLabel = activeThicknessValue ? `${activeThicknessValue} micron · ` : '';
       const descriptionPrefix = source === 'manual' ? 'Manual size: ' : '';
-      customSizeSummaryEl.textContent = `${descriptionPrefix}${thicknessLabel}${aroundVal.toFixed(0)} mm × ${acrossVal.toFixed(0)} mm (${customSize.area.toFixed(3)} sq.m)`;
+      customSizeSummaryEl.textContent = `${descriptionPrefix}${thicknessLabel}${acrossVal.toFixed(0)} mm × ${aroundVal.toFixed(0)} mm (${customSize.area.toFixed(3)} sq.m)`;
     }
     updateManualInlineSummary({ show: manualEntryEnabled && isManualSource });
 
@@ -824,6 +808,9 @@ function toggleManualSizeEntry(forceState = null) {
   if (manualEntryEnabled) {
     manualSizeContainerEl.classList.remove('d-none');
     toggleManualSizeBtn.textContent = 'Use preset sizes';
+    if (presetConfigRowEl) {
+      presetConfigRowEl.classList.add('d-none');
+    }
     if (customWidthInputEl) {
       customWidthInputEl.value = '';
       customWidthInputEl.disabled = true;
@@ -833,6 +820,12 @@ function toggleManualSizeEntry(forceState = null) {
       customLengthInputEl.disabled = true;
     }
     disableThicknessSelection();
+    if (presetThicknessGroupEl) {
+      presetThicknessGroupEl.classList.add('d-none');
+    }
+    if (manualThicknessGroupEl) {
+      manualThicknessGroupEl.classList.remove('d-none');
+    }
     if (manualDetailsRowEl) {
       manualDetailsRowEl.classList.remove('d-none');
     }
@@ -849,6 +842,9 @@ function toggleManualSizeEntry(forceState = null) {
   } else {
     manualSizeContainerEl.classList.add('d-none');
     toggleManualSizeBtn.textContent = "Can't find your sizes?";
+    if (presetConfigRowEl) {
+      presetConfigRowEl.classList.remove('d-none');
+    }
     if (customWidthInputEl) {
       customWidthInputEl.disabled = false;
     }
@@ -856,6 +852,12 @@ function toggleManualSizeEntry(forceState = null) {
       customLengthInputEl.disabled = false;
     }
     resetCustomSizeInputs();
+    if (presetThicknessGroupEl) {
+      presetThicknessGroupEl.classList.remove('d-none');
+    }
+    if (manualThicknessGroupEl) {
+      manualThicknessGroupEl.classList.add('d-none');
+    }
     populateCustomDropdowns({ widths: uniqueWidths, lengths: uniqueLengths });
     if (manualDetailsRowEl) {
       manualDetailsRowEl.classList.add('d-none');
@@ -1206,13 +1208,13 @@ function getFormData() {
   const customArea = isPositiveNumber(customSize.area) ? customSize.area : (customAcross && customAlong ? mmToSqm(customAcross, customAlong) : null);
   const cutToCustom = manualEntryEnabled ? true : Boolean(cutYesRadio && cutYesRadio.checked);
 
-  const resolvedRollLength = standardSize.rollLength || standardSize.along || 0;
-  const displayAlong = manualEntryEnabled
-    ? (resolvedRollLength || (customAlong || 0))
-    : (resolvedRollLength || (customAlong || 0));
-  const displayAcross = customAcross || 0;
-  const displaySizeLabel = (customAcross && displayAlong)
-    ? formatDimensionLabel(customAcross, displayAlong)
+  const resolvedRollLength = standardSize.rollLength || standardSize.across || 0;
+  const displayAlong = customAlong || 0;
+  const displayAcross = manualEntryEnabled
+    ? (resolvedRollLength || (customAcross || 0))
+    : (customAcross || 0);
+  const displaySizeLabel = (displayAcross && displayAlong)
+    ? formatDimensionLabel(displayAcross, displayAlong)
     : '';
   const standardAlong = isPositiveNumber(standardSize.along) ? standardSize.along : null;
   const standardAcross = isPositiveNumber(standardSize.across) ? standardSize.across : null;
@@ -1333,12 +1335,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   manualCutFromHalfNoteEl = document.getElementById('manualCutFromHalfNote');
   manualDetailsRowEl = document.getElementById('manualDetailsRow');
   manualPrimaryColumnEl = document.getElementById('manualPrimaryColumn');
-  manualQuantitySlotEl = document.getElementById('manualQuantitySlot');
-  manualDiscountSlotEl = document.getElementById('manualDiscountSlot');
   presetPrimaryColumnEl = document.getElementById('presetPrimaryColumn');
   presetQuantityGroupEl = document.getElementById('presetQuantityGroup');
   presetDiscountGroupEl = document.getElementById('presetDiscountGroup');
   presetStandardColumnEl = document.getElementById('presetStandardColumn');
+  presetThicknessGroupEl = document.getElementById('presetThicknessGroup');
+  manualThicknessGroupEl = document.getElementById('manualThicknessGroup');
   manualThicknessSelectEl = document.getElementById('manualThicknessSelect');
   cutRollSummaryEl = document.getElementById('cutRollSummary');
   manualInlineSummaryRowEl = document.getElementById('manualInlineSummaryRow');
@@ -1923,7 +1925,7 @@ function resetCalculations() {
   }
 
   const priceSection = document.getElementById('priceSection');
-  if (priceSection) priceSection.style.display = 'none';
+  if (priceSection) priceSection.style.display = 'block';
 
   const addToCartBtn = document.getElementById('addToCartBtn');
   if (addToCartBtn) addToCartBtn.disabled = true;
@@ -2112,11 +2114,13 @@ async function addMpackToCart() {
 
   const customSizeLabel = customAcross && customAlong ? formatDimensionLabel(customAcross, customAlong) : '';
   const standardSizeLabel = selectedSize || standardSize.label || customSizeLabel;
-  const resolvedRollLength = standardSize.rollLength || standardAlong || standardSize.along || 0;
+  const resolvedRollLength = standardSize.rollLength || standardAcross || standardSize.across || 0;
   const displayAlong = manualEntryEnabled
-    ? (resolvedRollLength || (cutToCustom && isPositiveNumber(customAlong) ? customAlong : standardAlong))
+    ? (customAlong || standardAlong)
     : (cutToCustom && isPositiveNumber(customAlong) ? customAlong : standardAlong);
-  const displayAcross = cutToCustom && isPositiveNumber(customAcross) ? customAcross : standardAcross;
+  const displayAcross = manualEntryEnabled
+    ? (resolvedRollLength || (customAcross || standardAcross))
+    : (cutToCustom && isPositiveNumber(customAcross) ? customAcross : standardAcross);
   const displaySizeLabel = manualEntryEnabled
     ? (displayAcross && displayAlong ? formatDimensionLabel(displayAcross, displayAlong) : (standardSizeLabel || ''))
     : ((cutToCustom && customSizeLabel) ? customSizeLabel : standardSizeLabel);

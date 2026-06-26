@@ -14,10 +14,9 @@
   <style>
     .mpack-diagram-column {
       display: grid;
-      grid-template-rows: 1fr auto;
-      row-gap: 1.5rem;
-      align-items: stretch;
-      height: 100%;
+      grid-template-rows: auto auto;
+      row-gap: 0.35rem;
+      align-items: start;
     }
 
     .mpack-diagram-column > * {
@@ -30,38 +29,49 @@
       align-items: center;
       justify-content: space-between;
       text-align: center;
-      gap: 0.75rem;
+      gap: 0.45rem;
       width: 100%;
-      flex: 1;
-      min-height: 240px;
-      padding: 1rem 1.5rem;
+      min-height: 0;
+      padding: 0 0 0.25rem;
     }
 
     .mpack-diagram-figure svg {
       width: 100%;
       height: auto;
-      max-width: 260px;
+      max-width: 190px;
+      max-height: 82px;
       margin: 0 auto;
       display: block;
     }
 
+    .mpack-diagram-figure img {
+      max-width: 190px;
+      max-height: 82px;
+      object-fit: contain;
+    }
+
+    .mpack-diagram-figure figcaption,
+    .mpack-diagram-figure > .text-muted {
+      display: none;
+    }
+
     .mpack-select-wrapper {
       width: 100%;
-      max-width: 320px;
+      max-width: 240px;
     }
 
     @media (min-width: 768px) {
       .mpack-diagram-figure {
-        align-items: flex-start;
-        text-align: left;
+        align-items: center !important;
+        text-align: center !important;
       }
 
       .mpack-diagram-figure svg {
-        margin: 0;
+        margin: 0 auto;
       }
 
       .mpack-select-wrapper {
-        margin-top: auto;
+        margin-top: 0;
       }
     }
 
@@ -82,7 +92,7 @@
     .mpack-inputs-column {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.6rem;
     }
 
     .mpack-controls-column {
@@ -112,7 +122,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      max-width: 220px;
+      max-width: none;
     }
 
     .mpack-standard-column .form-label,
@@ -122,18 +132,29 @@
     }
 
     .mpack-standard-sizes {
-      font-size: 1rem;
+      font-size: 0.85rem;
       font-weight: 600;
       color: #0f172a;
       background: #f8fafc;
       border: 1px solid #dbe3f1;
       border-radius: 8px;
-      padding: 0.85rem 1rem;
+      padding: 0.6rem 0.75rem;
+    }
+
+    .mpack-standard-column .form-select {
       max-width: 220px;
     }
 
+    .mpack-standard-column:not(.d-none) {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
     .mpack-standard-sizes p {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
     }
 
     .mpack-standard-sizes ol {
@@ -143,17 +164,7 @@
     }
 
     .mpack-standard-sizes li + li {
-      margin-top: 0.35rem;
-    }
-
-    .mpack-standard-note {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #0f172a;
-      background: #fff;
-      border: 1px dashed #dbe3f1;
-      border-radius: 8px;
-      padding: 0.65rem 1rem;
+      margin-top: 0.2rem;
     }
 
     .mpack-card-transparent {
@@ -181,34 +192,28 @@
       }
     }
 
+    #presetConfigRow,
     #manualDetailsRow.manual-config-grid {
       display: grid;
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     @media (min-width: 768px) {
+      #presetConfigRow,
       #manualDetailsRow.manual-config-grid {
-        gap: 2rem;
+        grid-template-columns: minmax(0, 1fr) minmax(190px, 240px);
+        align-items: end;
       }
     }
 
-    @media (min-width: 992px) {
-      #manualDetailsRow.manual-config-grid {
-        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(240px, 1fr);
-        align-items: stretch;
-      }
-    }
-
-    #manualControlsColumn .form-select,
-    #manualControlsColumn .form-control {
-      max-width: none;
+    #presetConfigRow.d-none,
+    #manualDetailsRow.manual-config-grid.d-none {
+      display: none !important;
     }
 
     @media (min-width: 992px) {
       .mpack-thickness-row {
-        flex-direction: row;
-        align-items: flex-start;
-        gap: 2rem;
+        gap: 1rem;
       }
 
       .mpack-inputs-column {
@@ -220,7 +225,7 @@
       }
 
       .mpack-standard-column {
-        flex: 0 0 240px;
+        min-width: 0;
       }
     }
 
@@ -228,8 +233,62 @@
       background-color: #f8fafc;
       border: 1px solid #dbe3f1;
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1rem;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
+
+    .mpack-page .pricing-section {
+      background: transparent;
+      color: #0f172a;
+      padding: 0;
+      box-shadow: none;
+      margin-top: 1rem;
+    }
+
+    .mpack-page .pricing-container {
+      max-width: 100%;
+    }
+
+    .mpack-page .pricing-preview {
+      background-color: #f8fafc;
+      border-color: #dbe3f1;
+      padding: 1rem;
+    }
+
+    .mpack-payment-card {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      padding: 1rem;
+    }
+
+    .mpack-payment-grid {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) minmax(280px, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .mpack-payment-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .mpack-payment-card .form-label {
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .mpack-payment-card .form-select,
+    .mpack-payment-card .form-control {
+      min-height: 32px;
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+    }
+
+    .mpack-payment-card .mt-3 {
+      margin-top: 0.6rem !important;
     }
 
     .mpack-pricing-breakdown {
@@ -242,9 +301,9 @@
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding-bottom: 0.35rem;
+      padding-bottom: 0.25rem;
       border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-      font-size: 0.95rem;
+      font-size: 0.85rem;
     }
 
     .mpack-pricing-row:last-child,
@@ -254,7 +313,7 @@
       padding-top: 0.75rem;
       border-top: 2px solid rgba(208, 184, 120, 0.5);
       font-weight: 600;
-      font-size: 1.05rem;
+      font-size: 1rem;
     }
 
     .mpack-pricing-label {
@@ -282,28 +341,22 @@
     }
 
     .mpack-diagram-visual {
-      height: 190px;
+      height: 82px;
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    /* Align manual manualDetailsRow two columns beside each other from md breakpoint */
+
   @media (min-width: 768px) {
     #manualSizeContainer {
       width: 100%;
     }
+  }
 
-    #manualDetailsRow {
-      display: flex;
-      flex-direction: row;
-      gap: 1.5rem;
-    }
-    #manualPrimaryColumn {
-      flex: 1 1 0;
-    }
-    #manualStandardColumn {
-      flex: 0 0 240px;
+  @media (max-width: 767.98px) {
+    .mpack-payment-grid {
+      grid-template-columns: 1fr;
     }
   }
 
@@ -354,6 +407,7 @@
   </div>
 
   <div id="mpackSection" style="display:none;">
+    <button type="button" class="btn btn-outline-gold btn-sm mb-3 w-100" id="toggleManualSizeBtn">Can't find your sizes?</button>
     <!-- Size selection first -->
     <div class="mpack-thickness-row mpack-config-row mb-4" id="presetConfigRow">
       <div class="mpack-inputs-column" id="presetInputsColumn">
@@ -407,38 +461,9 @@
           </div>
         </div>
         <div class="form-text">Select preset sizes to populate measurements automatically.</div>
-        <button type="button" class="btn btn-outline-gold btn-sm mt-2" id="toggleManualSizeBtn">Can't find your sizes?</button>
         <div class="form-text text-muted" id="customSizeSummary">Select sizes to see sq.m., then choose a thickness.</div>
         <div class="form-text text-muted d-none" id="cutRollSummary"></div>
         <div class="text-danger small mt-1 d-none" id="customSizeFeedback">Please enter both across and around measurements to continue.</div>
-      </div>
-      <div class="mpack-controls-column">
-        <div class="mpack-pricing-controls mt-2" id="mpackPricingControls">
-          <div class="mpack-thickness-primary" id="presetPrimaryColumn">
-            <div>
-              <label for="thicknessSelect" class="form-label">Select Thickness (micron)</label>
-              <select id="thicknessSelect" class="form-select" disabled>
-                <option value="">-- Select Thickness --</option>
-              </select>
-              <div class="form-text text-muted mt-2">Thickness options become available once a size is selected.</div>
-            </div>
-            <div id="presetQuantityGroup" class="mt-3">
-              <label for="sheetInput" class="form-label">Quantity (Sheets)</label>
-              <input type="number" id="sheetInput" class="form-control" min="1" value="1" />
-            </div>
-            <div id="presetDiscountGroup" class="mt-3">
-              <label for="discountSelect" class="form-label">Discount (%)</label>
-              <select id="discountSelect" class="form-select">
-                <option value="">-- Select Discount --</option>
-              </select>
-            </div>
-            <div id="presetGstGroup" class="mt-3">
-              <label for="gstSelect" class="form-label">GST Rate</label>
-              <input type="text" id="gstDisplay" class="form-control" value="18%" disabled>
-              <input type="hidden" id="gstSelect" value="18">
-            </div>
-          </div>
-        </div>
       </div>
       <div class="mpack-standard-column d-none" id="presetStandardColumn">
         <div class="mpack-standard-sizes">
@@ -451,16 +476,17 @@
             <li>1540</li>
           </ol>
         </div>
-        <div class="mpack-standard-note" id="presetStandardNote">Cut from size (roll)</div>
-        <label for="cutFromSizeSelect" class="form-label mb-1">Cut size (auto)</label>
-        <select id="cutFromSizeSelect" class="form-select" disabled>
-          <option value="" selected>----</option>
-          <option value="795">795 mm</option>
-          <option value="1150">1150 mm</option>
-          <option value="1240">1240 mm</option>
-          <option value="1320">1320 mm</option>
-          <option value="1540">1540 mm</option>
-        </select>
+        <div>
+          <label for="cutFromSizeSelect" class="form-label mb-1">Cut size (auto)</label>
+          <select id="cutFromSizeSelect" class="form-select" disabled>
+            <option value="" selected>----</option>
+            <option value="795">795 mm</option>
+            <option value="1150">1150 mm</option>
+            <option value="1240">1240 mm</option>
+            <option value="1320">1320 mm</option>
+            <option value="1540">1540 mm</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -516,19 +542,8 @@
           </div>
           <div class="d-none mt-2" id="manualInlineSummaryRow">
             <div class="form-text text-muted mb-1" id="manualInlineSizeSummary">Enter measurements to see sq.m.</div>
-            <div class="form-text text-muted" id="manualInlineDiscountSummary">Discount: --</div>
+            <div class="form-text text-muted d-none" id="manualInlineDiscountSummary"></div>
           </div>
-        </div>
-        <div class="mpack-controls-column mpack-thickness-primary" id="manualControlsColumn">
-          <div class="mt-2" id="manualThicknessGroup">
-            <label class="form-label" for="manualThicknessSelect">Thickness (micron)</label>
-            <select id="manualThicknessSelect" class="form-select" disabled>
-              <option value="">-- Select Thickness --</option>
-            </select>
-            <div class="form-text text-muted mt-2">Thickness will remain selectable from the dropdown above.</div>
-          </div>
-          <div id="manualQuantitySlot" class="mt-3"></div>
-          <div id="manualDiscountSlot" class="mt-3"></div>
         </div>
         <div class="mpack-standard-column manual d-none" id="manualStandardColumn">
           <div class="mpack-standard-sizes">
@@ -541,7 +556,7 @@
               <li>1540</li>
             </ol>
           </div>
-          <div class="mpack-standard-note" id="manualStandardNote">Cut from size (roll)</div>
+          <div>
           <label for="manualCutFromSizeSelect" class="form-label mb-1">Cut size (auto)</label>
           <select id="manualCutFromSizeSelect" class="form-select" disabled>
             <option value="" selected>----</option>
@@ -551,6 +566,7 @@
             <option value="1320">1320 mm</option>
             <option value="1540">1540 mm</option>
           </select>
+          </div>
           <div class="form-text text-muted d-none" id="manualCutFromHalfNote">½ roll</div>
         </div>
       </div>
@@ -588,14 +604,51 @@
       <p class="mb-0 text-muted small" id="cutDetailsNote">Select whether we should cut to your entered size. Pricing remains based on the selected standard size.</p>
     </div>
 
-    <section class="pricing-section" id="priceSection" style="display:none;">
-      <div class="pricing-container">
-        <div class="pricing-preview mb-3 mpack-pricing-box">
-          <div class="pricing-breakdown mpack-pricing-breakdown" id="pricingBreakdown">
-            <p class="text-muted mb-0">Select thickness and sizes to see pricing.</p>
+    <section class="pricing-section" id="priceSection">
+      <div class="pricing-container mpack-payment-card">
+        <div class="mpack-payment-title">Price Calculation</div>
+        <div class="mpack-payment-grid">
+          <div class="mpack-pricing-controls" id="mpackPricingControls">
+            <div class="mpack-thickness-primary" id="presetPrimaryColumn">
+              <div id="presetThicknessGroup">
+                <label for="thicknessSelect" class="form-label">Select Thickness (micron)</label>
+                <select id="thicknessSelect" class="form-select form-select-sm" disabled>
+                  <option value="">-- Select Thickness --</option>
+                </select>
+                <div class="form-text text-muted mt-1">Available after size selection.</div>
+              </div>
+              <div id="manualThicknessGroup" class="d-none">
+                <label class="form-label" for="manualThicknessSelect">Thickness (micron)</label>
+                <select id="manualThicknessSelect" class="form-select form-select-sm" disabled>
+                  <option value="">-- Select Thickness --</option>
+                </select>
+                <div class="form-text text-muted mt-1">Available after manual size entry.</div>
+              </div>
+              <div id="presetQuantityGroup" class="mt-3">
+                <label for="sheetInput" class="form-label">Quantity (Sheets)</label>
+                <input type="number" id="sheetInput" class="form-control form-control-sm" min="1" value="1" />
+              </div>
+              <div id="presetDiscountGroup" class="mt-3">
+                <label for="discountSelect" class="form-label">Select Discount</label>
+                <select id="discountSelect" class="form-select form-select-sm">
+                  <option value="">-- Select Discount --</option>
+                </select>
+              </div>
+              <div id="presetGstGroup" class="mt-3">
+                <label for="gstSelect" class="form-label">GST Rate</label>
+                <input type="text" id="gstDisplay" class="form-control form-control-sm" value="18%" disabled>
+                <input type="hidden" id="gstSelect" value="18">
+              </div>
+            </div>
+          </div>
+          <div class="pricing-preview mpack-pricing-box">
+            <div class="mpack-payment-title mb-2">Price Summary</div>
+            <div class="pricing-breakdown mpack-pricing-breakdown" id="pricingBreakdown">
+              <p class="text-muted mb-0">Select thickness and sizes to see pricing.</p>
+            </div>
           </div>
         </div>
-        <div class="pricing-actions">
+        <div class="pricing-actions mt-3">
           <button class="btn btn-primary" id="addToCartBtn" disabled>Add to Cart</button>
         </div>
         <div id="cart-message" class="mt-2"></div>
