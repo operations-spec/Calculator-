@@ -883,10 +883,11 @@ def mu_find_user_by_email_or_username(identifier):
     if not MONGO_AVAILABLE or users_col is None:
         return None
     try:
+        ident = (identifier or '').strip()
         return users_col.find_one({
             '$or': [
-                {'email': identifier},
-                {'username': identifier}
+                {'email': {'$regex': f'^{re.escape(ident)}$', '$options': 'i'}},
+                {'username': {'$regex': f'^{re.escape(ident)}$', '$options': 'i'}}
             ]
         })
     except Exception as e:
@@ -2304,6 +2305,38 @@ class User(UserMixin):
         except:
             return None
 
+
+def user_from_record(user_id, record):
+    """Normalize a JSON/Mongo user record into a User object."""
+    if isinstance(record, User):
+        return record
+    if not isinstance(record, dict):
+        return None
+
+    resolved_id = str(record.get('id') or record.get('_id') or user_id)
+    email = record.get('email')
+    username = record.get('username') or (email.split('@')[0] if email else None)
+    password_hash = record.get('password_hash')
+    if not email or not username or not password_hash:
+        return None
+
+    return User(
+        id=resolved_id,
+        email=email,
+        username=username,
+        password_hash=password_hash,
+        is_verified=record.get('is_verified', False),
+        otp_verified=record.get('otp_verified', False),
+        cart=record.get('cart', []),
+        reset_token=record.get('reset_token'),
+        reset_token_expiry=_parse_datetime(record.get('reset_token_expiry')),
+        company_id=record.get('company_id'),
+        phone=record.get('phone'),
+        role=record.get('role', 'user'),
+        created_at=_parse_datetime(record.get('created_at')),
+        assigned_companies=record.get('assigned_companies', [])
+    )
+
 # ---------------------------------------------------------------------------
 # JSON persistence helpers
 # ---------------------------------------------------------------------------
@@ -3063,24 +3096,7 @@ def load_user(user_id):
     # Fall back to JSON users
     users = _load_users_json()
     user_data = users.get(user_id) if hasattr(users, 'get') else None
-    if user_data:
-        return User(
-            id=user_id,
-            email=user_data['email'],
-            username=user_data.get('username', user_data['email'].split('@')[0]),
-            password_hash=user_data['password_hash'],
-            is_verified=user_data.get('is_verified', False),
-            otp_verified=user_data.get('otp_verified', False),
-            cart=user_data.get('cart', []),
-            reset_token=user_data.get('reset_token'),
-            reset_token_expiry=user_data.get('reset_token_expiry'),
-            company_id=user_data.get('company_id'),
-            phone=user_data.get('phone'),
-            role=user_data.get('role', 'user'),
-            created_at=_parse_datetime(user_data.get('created_at')),
-            assigned_companies=user_data.get('assigned_companies', [])
-        )
-    return None
+    return user_from_record(user_id, user_data)
 
 def save_users(users_dict=None):
     """Legacy wrapper around _save_users_json."""
@@ -3767,24 +3783,7 @@ def load_user(user_id):
     else:
         print('MongoDB not available, falling back to JSON users')
         user_data = users.get(user_id) if hasattr(users, 'get') else None
-        if user_data:
-            return User(
-                id=user_id,
-                email=user_data['email'],
-                username=user_data.get('username', user_data['email'].split('@')[0]),
-                password_hash=user_data['password_hash'],
-                is_verified=user_data.get('is_verified', False),
-                otp_verified=user_data.get('otp_verified', False),
-                cart=user_data.get('cart', []),
-                reset_token=user_data.get('reset_token'),
-                reset_token_expiry=user_data.get('reset_token_expiry'),
-                company_id=user_data.get('company_id'),
-                phone=user_data.get('phone'),
-                role=user_data.get('role', 'user'),
-                created_at=_parse_datetime(user_data.get('created_at')),
-                assigned_companies=user_data.get('assigned_companies', [])
-            )
-        return None
+        return user_from_record(user_id, user_data)
 
 @app.route('/cart')
 @login_required
@@ -7967,9 +7966,12 @@ def api_login():
         
         # Check if user exists in our loaded users
         user = None
-        for user_id, u in users.items():
-            if u.email == identifier or u.username == identifier:
-                user = u
+        for user_id, record in users.items():
+            candidate = user_from_record(user_id, record)
+            if not candidate:
+                continue
+            if candidate.email.lower() == identifier.lower() or candidate.username.lower() == identifier.lower():
+                user = candidate
                 break
                 
         if not user:
@@ -7979,16 +7981,11 @@ def api_login():
                     all_users = json.load(f)
                 
                 for user_id, user_data in all_users.items():
-                    if user_data.get('email') == identifier or user_data.get('username') == identifier:
+                    if (user_data.get('email') or '').lower() == identifier.lower() or (user_data.get('username') or '').lower() == identifier.lower():
                         # Create User object from file data
-                        user = User(
-                            id=user_id,
-                            email=user_data['email'],
-                            username=user_data['username'],
-                            password_hash=user_data['password_hash'],
-                            is_verified=user_data.get('is_verified', False),
-                            otp_verified=user_data.get('otp_verified', False)
-                        )
+                        user = user_from_record(user_id, user_data)
+                        if not user:
+                            continue
                         # Add to our users dictionary
                         users[user_id] = user
                         break
@@ -8197,7 +8194,21 @@ def litho_perforation_rules():
 @login_required
 @company_required
 def ejection_rubbers():
-    return render_company_product_page('products/ejection_rubbers/ejection_rubbers.html')
+    return redirect(url_for('misc_products'))
+
+
+@app.route('/presspahn')
+@login_required
+@company_required
+def presspahn():
+    return redirect(url_for('misc_products'))
+
+
+@app.route('/plotters')
+@login_required
+@company_required
+def plotters():
+    return redirect(url_for('misc_products'))
 
 
 @app.route('/autowash-cloth')
@@ -8205,20 +8216,6 @@ def ejection_rubbers():
 @company_required
 def autowash_cloth():
     return render_company_product_page('products/autowash_cloth/autowash_cloth.html')
-
-
-@app.route('/presspahn')
-@login_required
-@company_required
-def presspahn():
-    return render_company_product_page('products/presspahn/presspahn.html')
-
-
-@app.route('/plotters')
-@login_required
-@company_required
-def plotters():
-    return render_company_product_page('products/plotters/plotters.html')
 
 
 @app.route('/misc-products')

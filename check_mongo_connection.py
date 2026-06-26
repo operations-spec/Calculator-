@@ -27,9 +27,7 @@ def check_mongo_connection():
         # Add TLS/SSL options if using MongoDB Atlas
         if 'mongodb+srv://' in mongo_uri:
             mongo_params.update({
-                'tls': True,
-                'tlsAllowInvalidCertificates': True,
-                'tlsInsecure': True
+                'tls': True
             })
         
         # Try to connect

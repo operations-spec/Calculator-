@@ -14,8 +14,10 @@
 
   const machineSelect = document.getElementById('creasingMatrixMachineSelect');
   const thicknessSelect = document.getElementById('creasingMatrixThicknessSelect');
+  const thicknessOptions = document.getElementById('creasingMatrixThicknessOptions');
   const thicknessHelper = document.getElementById('creasingMatrixThicknessHelper');
   const sizeSelect = document.getElementById('creasingMatrixSizeSelect');
+  const sizeOptions = document.getElementById('creasingMatrixSizeOptions');
   const sizeHelper = document.getElementById('creasingMatrixSizeHelper');
   const quantityInput = document.getElementById('creasingMatrixQuantityInput');
   const quantityHelper = document.getElementById('creasingMatrixQuantityHelper');
@@ -23,7 +25,7 @@
   const summaryBody = document.getElementById('creasingMatrixSummaryBody');
   const summaryActions = document.getElementById('creasingMatrixSummaryActions');
 
-  if (!thicknessSelect || !sizeSelect || !quantityInput || !summaryBody) {
+  if (!thicknessSelect || !thicknessOptions || !sizeSelect || !sizeOptions || !quantityInput || !summaryBody) {
     return;
   }
 
@@ -261,6 +263,7 @@
       console.error('creasing_matrix.js: unable to load matrix options', error);
       thicknessSelect.innerHTML = '<option value="">Unable to load thickness list</option>';
       thicknessSelect.disabled = true;
+      thicknessOptions.innerHTML = '<p class="chem-placeholder mb-0">Unable to load thickness list.</p>';
       setThicknessHelper('Unable to load thicknesses. Please refresh.');
     }
   }
@@ -343,6 +346,7 @@
     if (!state.thicknesses.length) {
       thicknessSelect.innerHTML = '<option value="">No thickness data yet</option>';
       thicknessSelect.disabled = true;
+      thicknessOptions.innerHTML = '<p class="chem-placeholder mb-0">No thickness data yet.</p>';
       setThicknessHelper('Thickness data is not available.');
       return;
     }
@@ -354,6 +358,20 @@
       option.value = entry.id;
       option.textContent = entry.label || `${entry.value} mm`;
       thicknessSelect.appendChild(option);
+    });
+
+    thicknessOptions.innerHTML = state.thicknesses
+      .map(entry => optionButton(
+        'thickness',
+        entry.id,
+        entry.label || `${entry.value} mm`,
+        state.selectedThickness?.id === entry.id,
+        `${Array.isArray(entry.sizes) ? entry.sizes.length : 0} sizes available`
+      ))
+      .join('');
+
+    thicknessOptions.querySelectorAll('[data-thickness]').forEach(button => {
+      button.addEventListener('click', () => selectThickness(button.dataset.thickness));
     });
 
     setThicknessHelper('Pick a thickness to filter compatible sizes.');
@@ -368,6 +386,7 @@
     state.quantityRolls = null;
     state.quantityConfirmed = false;
     thicknessSelect.value = thickness.id;
+    renderThicknessOptions();
     renderSizeOptions();
     resetQuantityInput();
     updateSummary();
@@ -385,6 +404,7 @@
     if (!sizes.length) {
       sizeSelect.disabled = true;
       sizeSelect.innerHTML = '<option value="">No sizes configured for this thickness</option>';
+      sizeOptions.innerHTML = '<p class="chem-placeholder mb-0">No sizes configured for this thickness.</p>';
       setSizeHelper('No active sizes documented for the chosen thickness.');
       return;
     }
@@ -401,6 +421,20 @@
         option.dataset.width = width;
       }
       sizeSelect.appendChild(option);
+    });
+
+    sizeOptions.innerHTML = sizes
+      .map(size => optionButton(
+        'size',
+        size.id,
+        formatSizeLabel(size.label),
+        state.selectedSize?.id === size.id,
+        buildSizeMeta(size)
+      ))
+      .join('');
+
+    sizeOptions.querySelectorAll('[data-size]').forEach(button => {
+      button.addEventListener('click', () => selectSize(button.dataset.size));
     });
 
     if (state.selectedSize) {
@@ -428,6 +462,8 @@
     state.quantityRolls = null;
     state.quantityConfirmed = false;
     sizeSelect.value = size.id;
+    renderSizeOptions();
+    resetQuantityInput(false);
     if (quantityInput) {
       quantityInput.value = '';
       quantityInput.disabled = false;
@@ -443,8 +479,6 @@
       confirmQuantityBtn.disabled = true;
     }
 
-    renderSizeOptions();
-    resetQuantityInput(false);
     updateSummary();
     collapseStep(document.getElementById('creasingMatrixStepSize'), formatSizeLabel(size.label));
   }
@@ -749,11 +783,13 @@
   function setThicknessLoading(message) {
     thicknessSelect.innerHTML = `<option value="">${sanitize(message)}</option>`;
     thicknessSelect.disabled = true;
+    thicknessOptions.innerHTML = `<p class="chem-placeholder mb-0">${sanitize(message)}</p>`;
   }
 
   function setSizeLoading(message) {
     sizeSelect.innerHTML = `<option value="">${sanitize(message)}</option>`;
     sizeSelect.disabled = true;
+    sizeOptions.innerHTML = `<p class="chem-placeholder mb-0">${sanitize(message)}</p>`;
     setSizeHelper(message);
   }
 
@@ -791,6 +827,15 @@
         <span class="chem-summary__value">${sanitize(value)}</span>
         ${note ? `<span class="chem-summary__note">${note}</span>` : ''}
       </div>
+    `;
+  }
+
+  function optionButton(kind, value, title, active, note = '') {
+    return `
+      <button type="button" class="chem-option ${active ? 'chem-option--active' : ''}" data-${kind}="${sanitize(value)}" aria-pressed="${active ? 'true' : 'false'}">
+        <span class="chem-option__title">${sanitize(title)}</span>
+        ${note ? `<span class="chem-option__meta">${sanitize(note)}</span>` : ''}
+      </button>
     `;
   }
 

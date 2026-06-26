@@ -163,6 +163,109 @@ function getBlanketSections() {
   };
 }
 
+function sanitizeOptionText(value) {
+  if (value === undefined || value === null) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function optionButton(kind, value, title, active, note = '') {
+  return `
+    <button type="button" class="chem-option ${active ? 'chem-option--active' : ''}" data-${kind}="${sanitizeOptionText(value)}" aria-pressed="${active ? 'true' : 'false'}">
+      <span class="chem-option__title">${sanitizeOptionText(title)}</span>
+      ${note ? `<span class="chem-option__meta">${sanitizeOptionText(note)}</span>` : ''}
+    </button>
+  `;
+}
+
+function syncPickerState(selectEl, pickerEl) {
+  if (!pickerEl || !selectEl) return;
+  const showDropdown = !!selectEl.value && !selectEl.disabled;
+  pickerEl.classList.toggle('chem-picker--selected', showDropdown);
+}
+
+function resetPicker(selectEl, pickerEl) {
+  if (selectEl) {
+    selectEl.value = '';
+  }
+  syncPickerState(selectEl, pickerEl);
+}
+
+function bindPickerSelect(selectEl, pickerEl) {
+  if (!selectEl || !pickerEl || selectEl.__pickerBound) return;
+  selectEl.addEventListener('change', () => syncPickerState(selectEl, pickerEl));
+  selectEl.__pickerBound = true;
+}
+
+function renderOptionBoxes(selectEl, containerEl, kind, pickerEl, { placeholder = 'No options available.', skipEmpty = true } = {}) {
+  if (!containerEl) return;
+  if (!selectEl) {
+    containerEl.innerHTML = `<p class="chem-placeholder mb-0">${sanitizeOptionText(placeholder)}</p>`;
+    syncPickerState(selectEl, pickerEl);
+    return;
+  }
+
+  const options = Array.from(selectEl.options).filter(opt => !skipEmpty || opt.value);
+  if (!options.length) {
+    containerEl.innerHTML = `<p class="chem-placeholder mb-0">${sanitizeOptionText(placeholder)}</p>`;
+    syncPickerState(selectEl, pickerEl);
+    return;
+  }
+
+  containerEl.innerHTML = options
+    .map(opt => optionButton(kind, opt.value, opt.textContent, selectEl.value === opt.value))
+    .join('');
+
+  containerEl.querySelectorAll(`[data-${kind}]`).forEach(button => {
+    button.addEventListener('click', () => {
+      const value = button.getAttribute(`data-${kind}`);
+      if (selectEl.value === value) return;
+      selectEl.value = value;
+      syncPickerState(selectEl, pickerEl);
+      selectEl.dispatchEvent(new Event('change'));
+    });
+  });
+
+  syncPickerState(selectEl, pickerEl);
+}
+
+function renderCategoryOptions() {
+  const categorySelect = document.getElementById('categorySelect');
+  renderOptionBoxes(
+    categorySelect,
+    document.getElementById('categoryOptions'),
+    'category',
+    document.getElementById('categorySection'),
+    { placeholder: 'Loading categories...' }
+  );
+}
+
+function renderBlanketOptions() {
+  const blanketSelect = document.getElementById('blanketSelect');
+  renderOptionBoxes(
+    blanketSelect,
+    document.getElementById('blanketOptions'),
+    'blanket',
+    document.getElementById('blanketTypeSection'),
+    { placeholder: 'Select a category first.' }
+  );
+}
+
+function initBlanketPickers() {
+  bindPickerSelect(
+    document.getElementById('categorySelect'),
+    document.getElementById('categorySection')
+  );
+  bindPickerSelect(
+    document.getElementById('blanketSelect'),
+    document.getElementById('blanketTypeSection')
+  );
+}
+
 function resetMeasurements() {
   const lengthInput = document.getElementById('lengthInput');
   const widthInput = document.getElementById('widthInput');
@@ -672,11 +775,17 @@ window.onload = () => {
       // When category changes, filter the blankets
       categorySelect.addEventListener("change", () => {
         const selectedCategory = categorySelect.value || 'All';
+        const blanketSelect = document.getElementById('blanketSelect');
+        resetPicker(blanketSelect, document.getElementById('blanketTypeSection'));
         filterBlanketsByCategory(selectedCategory, blanketCategoriesData);
         const { blanketSection } = getBlanketSections();
         if (blanketSection) blanketSection.style.display = 'block';
         updateMeasurementVisibility();
+        renderCategoryOptions();
       });
+
+      initBlanketPickers();
+      renderCategoryOptions();
 
       const initialCategory = categorySelect.value || '';
       if (initialCategory) {
@@ -927,10 +1036,12 @@ window.onload = () => {
       calculatePrice();
       updateMeasurementVisibility();
       updatePricingVisibility();
+      renderBlanketOptions();
     };
 
     blanketSelect.addEventListener('change', blanketSelect.__blanketChangeHandler);
 
+    renderBlanketOptions();
     updateMeasurementVisibility();
   }
 

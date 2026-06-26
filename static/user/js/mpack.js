@@ -176,6 +176,10 @@ function populateCutSizeDropdown(rollArray = FULL_ROLL_SIZES) {
 let customLengthInputEl;
 let customWidthInputEl;
 let thicknessSelectEl;
+let underpackingTypeOptionsEl;
+let productFormatOptionsEl;
+let underpackingTypePickerEl;
+let productFormatPickerEl;
 let customSizeSummaryEl;
 let customSizeFeedbackEl;
 let cutQuestionSectionEl;
@@ -247,6 +251,110 @@ function formatDimensionLabel(acrossMm, alongMm) {
     return '';
   }
   return `${formattedAlong} x ${formattedAcross} mm`;
+}
+
+function sanitizeOptionText(value) {
+  if (value === undefined || value === null) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function optionButton(kind, value, title, active, note = '') {
+  return `
+    <button type="button" class="chem-option ${active ? 'chem-option--active' : ''}" data-${kind}="${sanitizeOptionText(value)}" aria-pressed="${active ? 'true' : 'false'}">
+      <span class="chem-option__title">${sanitizeOptionText(title)}</span>
+      ${note ? `<span class="chem-option__meta">${sanitizeOptionText(note)}</span>` : ''}
+    </button>
+  `;
+}
+
+function syncPickerState(selectEl, pickerEl) {
+  if (!pickerEl || !selectEl) return;
+  const showDropdown = !!selectEl.value && !selectEl.disabled;
+  pickerEl.classList.toggle('chem-picker--selected', showDropdown);
+}
+
+function resetPicker(selectEl, pickerEl) {
+  if (selectEl) {
+    selectEl.value = '';
+  }
+  syncPickerState(selectEl, pickerEl);
+}
+
+function bindPickerSelect(selectEl, pickerEl) {
+  if (!selectEl || !pickerEl || selectEl.__pickerBound) return;
+  selectEl.addEventListener('change', () => syncPickerState(selectEl, pickerEl));
+  selectEl.__pickerBound = true;
+}
+
+function renderOptionBoxes(selectEl, containerEl, kind, pickerEl, { placeholder = 'No options available.', skipEmpty = true, disabledMessage = '' } = {}) {
+  if (!containerEl) return;
+
+  if (!selectEl || selectEl.disabled) {
+    const message = disabledMessage || placeholder;
+    containerEl.innerHTML = `<p class="chem-placeholder mb-0">${sanitizeOptionText(message)}</p>`;
+    syncPickerState(selectEl, pickerEl);
+    return;
+  }
+
+  const options = Array.from(selectEl.options).filter(opt => !skipEmpty || opt.value);
+  if (!options.length) {
+    containerEl.innerHTML = `<p class="chem-placeholder mb-0">${sanitizeOptionText(placeholder)}</p>`;
+    syncPickerState(selectEl, pickerEl);
+    return;
+  }
+
+  containerEl.innerHTML = options
+    .map(opt => optionButton(kind, opt.value, opt.textContent, selectEl.value === opt.value))
+    .join('');
+
+  containerEl.querySelectorAll(`[data-${kind}]`).forEach(button => {
+    button.addEventListener('click', () => {
+      const value = button.getAttribute(`data-${kind}`);
+      if (selectEl.value === value) return;
+      selectEl.value = value;
+      syncPickerState(selectEl, pickerEl);
+      selectEl.dispatchEvent(new Event('change'));
+    });
+  });
+
+  syncPickerState(selectEl, pickerEl);
+}
+
+function renderUnderpackingTypeOptions() {
+  renderOptionBoxes(
+    document.getElementById('underpackingType'),
+    underpackingTypeOptionsEl,
+    'underpacking',
+    underpackingTypePickerEl,
+    { placeholder: 'Choose an underpacking type to begin.' }
+  );
+}
+
+function renderProductFormatOptions() {
+  renderOptionBoxes(
+    document.getElementById('productFormatSelect'),
+    productFormatOptionsEl,
+    'format',
+    productFormatPickerEl,
+    { placeholder: 'Select Polipack to choose a format.' }
+  );
+}
+
+function resetSizePickers() {
+  if (customWidthInputEl) customWidthInputEl.value = '';
+  if (customLengthInputEl) customLengthInputEl.value = '';
+  if (thicknessSelectEl) thicknessSelectEl.value = '';
+  if (manualThicknessSelectEl) manualThicknessSelectEl.value = '';
+}
+
+function initMpackPickers() {
+  bindPickerSelect(document.getElementById('underpackingType'), underpackingTypePickerEl);
+  bindPickerSelect(document.getElementById('productFormatSelect'), productFormatPickerEl);
 }
 
 function populateSelectOptions(selectEl, values = [], placeholder = '-- Select --') {
@@ -703,6 +811,7 @@ function resetCustomSizeInputs() {
   if (customWidthInputEl) customWidthInputEl.value = '';
   if (manualWidthInputEl) manualWidthInputEl.value = '';
   if (manualLengthInputEl) manualLengthInputEl.value = '';
+  resetSizePickers();
   updateCustomSizeState();
   disableThicknessSelection();
 }
@@ -1200,6 +1309,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   customLengthInputEl = document.getElementById('customLengthInput');
   customWidthInputEl = document.getElementById('customWidthInput');
   thicknessSelectEl = document.getElementById('thicknessSelect');
+  underpackingTypeOptionsEl = document.getElementById('underpackingTypeOptions');
+  productFormatOptionsEl = document.getElementById('productFormatOptions');
+  underpackingTypePickerEl = document.getElementById('underpackingTypePicker');
+  productFormatPickerEl = document.getElementById('productFormatColumn');
   customSizeSummaryEl = document.getElementById('customSizeSummary');
   customSizeFeedbackEl = document.getElementById('customSizeFeedback');
   cutQuestionSectionEl = document.getElementById('cutQuestionSection');
@@ -1236,6 +1349,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   populateCutSizeDropdown();
 
+  initMpackPickers();
+  renderUnderpackingTypeOptions();
+  renderProductFormatOptions();
+
   // Disable standard size search until custom size captured
   if (sizeInputEl) {
     sizeInputEl.disabled = true;
@@ -1247,12 +1364,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Attach listeners for custom size inputs
   if (customLengthInputEl) {
     customLengthInputEl.addEventListener('change', event => {
+      if (thicknessSelectEl) thicknessSelectEl.value = '';
       updateWidthOptionsForLength(event.target.value);
       handleCustomSizeInputChange();
     });
   }
   if (customWidthInputEl) {
     customWidthInputEl.addEventListener('change', event => {
+      if (customLengthInputEl) customLengthInputEl.value = '';
+      if (thicknessSelectEl) thicknessSelectEl.value = '';
       updateLengthOptionsForWidth(event.target.value);
       handleCustomSizeInputChange();
     });
@@ -1465,7 +1585,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         productFormatColumn.classList[isPolipack ? 'remove' : 'add']('d-none');
       }
       if (!isPolipack && productFormatSelect) {
-        productFormatSelect.value = '';
+        resetPicker(productFormatSelect, productFormatPickerEl);
       }
 
       const shouldShowConfigurator = Boolean(selectedType) && (!isPolipack || hasPolipackFormat);
@@ -1485,12 +1605,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     };
 
-    underpackingTypeSelect.addEventListener('change', handleUnderpackingChange);
-    // run once on load
+    underpackingTypeSelect.addEventListener('change', () => {
+      resetSizePickers();
+      handleUnderpackingChange();
+      renderUnderpackingTypeOptions();
+      renderProductFormatOptions();
+    });
     handleUnderpackingChange();
+    renderUnderpackingTypeOptions();
+    renderProductFormatOptions();
 
     if (productFormatSelect) {
       productFormatSelect.addEventListener('change', () => {
+        resetSizePickers();
         disableThicknessSelection();
         const pCfg = getActivePolipackConfig();
         if (pCfg) {
@@ -1498,6 +1625,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           thicknessSelectEl.disabled = false;
         }
         handleUnderpackingChange();
+        renderProductFormatOptions();
       });
     }
   }

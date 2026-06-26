@@ -237,6 +237,30 @@
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
+.chem-picker > .form-select {
+  display: none;
+  margin-top: 0.75rem;
+}
+
+.chem-picker--selected > .form-select {
+  display: block;
+}
+
+.chem-picker--selected .chem-options {
+  display: none !important;
+}
+
+.chem-picker--selected .form-text {
+  display: none;
+}
+
+.chemicals-page--matrix label[for="creasingMatrixThicknessSelect"],
+.chemicals-page--matrix label[for="creasingMatrixSizeSelect"],
+.chemicals-page--matrix #creasingMatrixThicknessSelect,
+.chemicals-page--matrix #creasingMatrixSizeSelect {
+  display: none;
+}
+
 .chem-option {
   position: relative;
   display: flex;

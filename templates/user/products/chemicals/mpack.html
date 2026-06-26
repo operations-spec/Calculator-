@@ -2,8 +2,13 @@
 
 {% block title %}MPACK Selection - Product Calculator{% endblock %}
 
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='user/css/chemicals.css') }}">
+{% endblock %}
+
 {% block content %}
-  <div class="container my-5">
+  <div class="container my-5 mpack-page">
   <h2>MPACK Selection</h2>
 
   <style>
@@ -324,8 +329,9 @@
   <!-- Underpacking Type Selection -->
   <div class="mb-3">
     <div class="row g-3 underpacking-row">
-      <div class="col-12 col-lg-6 underpacking-type-col">
-        <label for="underpackingType" class="form-label">Select Underpacking Type:</label>
+      <div class="col-12 col-lg-6 underpacking-type-col chem-picker" id="underpackingTypePicker">
+        <label class="form-label">Select Underpacking Type:</label>
+        <div class="chem-options chem-options--formats" id="underpackingTypeOptions" role="radiogroup" aria-live="polite"></div>
         <select id="underpackingType" class="form-select">
           <option value="">-- Select Underpacking Type --</option>
           <option value="mtech_mpack">Mtech Mpack</option>
@@ -333,8 +339,11 @@
           <option value="polipack">Polipack</option>
         </select>
       </div>
-      <div class="col-12 col-lg-6 d-none product-format-col" id="productFormatColumn">
-        <label for="productFormatSelect" class="form-label">Product Format <span class="text-muted small">(Polipack)</span>:</label>
+      <div class="col-12 col-lg-6 d-none product-format-col chem-picker" id="productFormatColumn">
+        <label class="form-label">Product Format <span class="text-muted small">(Polipack)</span>:</label>
+        <div class="chem-options chem-options--formats" id="productFormatOptions" role="radiogroup" aria-live="polite">
+          <p class="chem-placeholder mb-0">Select Polipack to choose a format.</p>
+        </div>
         <select id="productFormatSelect" class="form-select">
           <option value="">-- Select Format --</option>
           <option value="polipack_aa">Self-Adhesive (AA)</option>

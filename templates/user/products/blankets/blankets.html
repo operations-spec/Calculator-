@@ -2,13 +2,18 @@
 
 {% block title %}Blanket Selection - Product Calculator{% endblock %}
 
+{% block extra_css %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='user/css/chemicals.css') }}">
+{% endblock %}
+
 {% block content %}
   {% set discount_privileges = {
     'extended_discount_allowed': extended_discount_allowed,
     'restricted_cap': current_discount_cap|default(5)|float
   } %}
 
-  <div id="blanketsPageRoot" data-discount-privileges='{{ discount_privileges|tojson|e }}'>
+  <div id="blanketsPageRoot" class="blankets-page" data-discount-privileges='{{ discount_privileges|tojson|e }}'>
     <div class="container">
       <div class="mb-4">
         <div id="blanketCompanySummary" class="mb-3"></div>
@@ -24,8 +29,11 @@
         </div>
       </div>
 
-      <div class="mb-3" id="categorySection">
-        <label for="categorySelect" class="form-label">Select Blanket Category:</label>
+      <div class="mb-3 chem-picker" id="categorySection">
+        <label class="form-label">Select Blanket Category:</label>
+        <div class="chem-options chem-options--formats" id="categoryOptions" role="radiogroup" aria-live="polite">
+          <p class="chem-placeholder mb-0">Loading categories...</p>
+        </div>
         <select id="categorySelect" class="form-select">
           <option value="" selected disabled>-- Select Category --</option>
           <option value="All">All Categories</option>
@@ -33,8 +41,11 @@
       </div>
 
       <div id="blanketSection" style="display:none;">
-        <div class="mb-3" id="blanketTypeSection">
-          <label for="blanketSelect" class="form-label">Select Blanket Type:</label>
+        <div class="mb-3 chem-picker" id="blanketTypeSection">
+          <label class="form-label">Select Blanket Type:</label>
+          <div class="chem-options chem-options--product" id="blanketOptions" role="radiogroup" aria-live="polite">
+            <p class="chem-placeholder mb-0">Select a category first.</p>
+          </div>
           <select id="blanketSelect" class="form-select">
             <option value="">-- Select Blanket --</option>
           </select>
